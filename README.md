@@ -33,7 +33,7 @@
 
 ## 🎯 Overview
 
-**JoziFix** is a modern, responsive web application designed to empower citizens to report infrastructure issues in their communities. Built specifically for Johannesburg (but adaptable to any city), this platform bridges the gap between citizens and local authorities by providing an intuitive interface for reporting potholes, water leaks, traffic light malfunctions, and other public infrastructure problems.
+**SafeCity** is a modern, responsive web application designed to empower citizens to report infrastructure issues in their communities. Built specifically for Johannesburg (but adaptable to any city), this platform bridges the gap between citizens and local authorities by providing an intuitive interface for reporting potholes, water leaks, traffic light malfunctions, and other public infrastructure problems.
 
 ### 🎯 Mission
 To create safer, better-maintained cities through community engagement and transparent issue tracking.
