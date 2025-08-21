@@ -26,8 +26,9 @@
 - [🌙 Dark Mode](#-dark-mode)
 - [🔧 API Integration](#-api-integration)
 - [🤝 Contributing](#-contributing)
+- [👥 Contributors](#-contributors)
 - [📄 License](#-license)
-- [👥 Contact](#-contact)
+- [💥 Contact](#-contact)
 
 ---
 
@@ -143,7 +144,7 @@ To create safer, better-maintained cities through community engagement and trans
 - **💾 Local Storage**: Data persistence and theme preferences
 - **🎨 CSS Custom Properties**: Dynamic theming system
 - **📱 Responsive Design**: CSS Grid & Flexbox
-- **🔄 Service Worker Ready**: PWA preparation
+- **📄 Service Worker Ready**: PWA preparation
 
 ---
 
@@ -179,7 +180,7 @@ To create safer, better-maintained cities through community engagement and trans
    http://localhost:8000
    ```
 
-### 🏗️ Local Development Setup
+### 🗃️ Local Development Setup
 
 1. **📁 Project Structure Setup**
    ```bash
@@ -203,7 +204,7 @@ To create safer, better-maintained cities through community engagement and trans
 
 ### 🗺️ **Viewing the Issue Map**
 
-1. **🔍 Navigate to Map Section**
+1. **📍 Navigate to Map Section**
    - Click the "🗺️ Map" button in the navigation
    - View all reported issues on the interactive map
 
@@ -291,7 +292,7 @@ To create safer, better-maintained cities through community engagement and trans
 │   └── ⏳ Loading Overlay       # User feedback during submission
 │
 ├── 🎨 styles.css                # 💄 Complete Styling System
-│   ├── 🔄 CSS Reset & Base      # Normalize browser defaults
+│   ├── 📄 CSS Reset & Base      # Normalize browser defaults
 │   ├── 🎨 Theme Variables       # Light/Dark mode color schemes
 │   ├── 📱 Responsive Design     # Mobile-first approach
 │   ├── 🎭 Component Styles      # Modular CSS architecture
@@ -299,7 +300,7 @@ To create safer, better-maintained cities through community engagement and trans
 │   └── ♿ Accessibility         # Focus states & ARIA support
 │
 ├── ⚡ script.js                 # 🧠 Application Logic & Interactions
-│   ├── 🏗️ App State Management  # Centralized data handling
+│   ├── 🗃️ App State Management  # Centralized data handling
 │   ├── 🧭 Navigation System     # Section switching logic
 │   ├── 📍 Geolocation Handler   # GPS & location services
 │   ├── 📸 Photo Upload System   # Camera integration
@@ -311,13 +312,13 @@ To create safer, better-maintained cities through community engagement and trans
 │   └── 🚀 Performance Utilities # Optimization functions
 │
 ├── 🖼️ logo.jpeg                 # 🎨 Application Branding
-│   └── 📐 Dimensions: 60x60px   # Optimized for header display
+│   └── 📏 Dimensions: 60x60px   # Optimized for header display
 │
 └── 📖 README.md                 # 📚 Complete Documentation
     └── 📋 This comprehensive guide
 ```
 
-### 🔍 **Code Architecture Details**
+### 📁 **Code Architecture Details**
 
 #### 📄 **index.html Structure**
 ```html
@@ -367,7 +368,7 @@ Transition Animations
 
 #### ⚡ **script.js Modules**
 ```javascript
-// 🏗️ Core Architecture
+// 🗃️ Core Architecture
 const appState = { /* Centralized State */ };
 
 // 🎯 Feature Modules
@@ -400,7 +401,7 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 | **Error** | `#ff6b6b` | `#ee5a24` | New/urgent issues |
 
 #### **📐 Layout System**
-- **🏗️ CSS Grid**: Statistics dashboard, issue type selector
+- **🗃️ CSS Grid**: Statistics dashboard, issue type selector
 - **📦 Flexbox**: Navigation, form layout, card components
 - **📱 Mobile-First**: Breakpoints at 480px, 768px, 1024px
 - **⚡ Fluid Typography**: `clamp()` functions for responsive text
@@ -445,7 +446,7 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 
 #### **📱 Mobile (≤ 480px)**
 ```css
-🔄 Single column layout
+📄 Single column layout
 📝 Stacked form elements  
 🗺️ Compact map view (350px height)
 🎯 Touch-optimized buttons (min 44px)
@@ -462,7 +463,7 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 
 #### **💻 Desktop (769px+)**
 ```css
-🏗️ Multi-column layouts
+🗃️ Multi-column layouts
 🗺️ Full-featured map interface
 📊 4-column statistics dashboard
 🎨 Enhanced hover interactions
@@ -472,9 +473,9 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 
 - **👆 Touch Targets**: Minimum 44x44px click areas
 - **📱 Gesture Support**: Swipe navigation preparation
-- **🔍 Zoom Compatibility**: Pinch-to-zoom friendly layouts
+- **📍 Zoom Compatibility**: Pinch-to-zoom friendly layouts
 - **⌨️ Keyboard Navigation**: Tab order, focus management
-- **🔊 Screen Reader**: ARIA labels, semantic HTML structure
+- **📊 Screen Reader**: ARIA labels, semantic HTML structure
 
 ---
 
@@ -482,10 +483,10 @@ document.addEventListener('DOMContentLoaded', initializeApp);
 
 ### 🎯 **WCAG 2.1 AA Compliance**
 
-#### **🔍 Visual Accessibility**
+#### **📍 Visual Accessibility**
 - **🌈 Color Contrast**: 4.5:1 minimum ratio for all text
 - **🎨 Color Independence**: Information not conveyed by color alone
-- **🔍 Focus Indicators**: 2px solid outlines on interactive elements
+- **📝 Focus Indicators**: 2px solid outlines on interactive elements
 - **📱 Scalable Interface**: Supports 200% zoom without horizontal scrolling
 
 #### **⌨️ Keyboard Navigation**
@@ -506,7 +507,7 @@ document.addEventListener('keydown', function(e) {
 });
 ```
 
-#### **🔊 Screen Reader Support**
+#### **📊 Screen Reader Support**
 ```html
 <!-- 🏷️ ARIA Labels -->
 <button aria-label="Toggle between light and dark theme">
@@ -523,7 +524,7 @@ document.addEventListener('keydown', function(e) {
 - **🚀 Fast Loading**: Under 3 seconds on 3G connections
 - **📱 Progressive Enhancement**: Works without JavaScript
 - **💾 Offline Capability**: Service Worker integration ready
-- **🔄 Graceful Degradation**: Fallbacks for all interactive features
+- **📄 Graceful Degradation**: Fallbacks for all interactive features
 
 ---
 
@@ -531,11 +532,11 @@ document.addEventListener('keydown', function(e) {
 
 ### 🎨 **Complete Theme System**
 
-#### **🔄 Automatic Detection**
+#### **📄 Automatic Detection**
 ```javascript
-// 🌍 System Preference Detection
+// 🌐 System Preference Detection
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-const savedTheme = localStorage.getItem('igodi-theme') || 
+const savedTheme = localStorage.getItem('safecity-theme') || 
     (prefersDark.matches ? 'dark' : 'light');
 ```
 
@@ -545,7 +546,7 @@ const savedTheme = localStorage.getItem('igodi-theme') ||
 const themeManager = {
     setTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('igodi-theme', theme);
+        localStorage.setItem('safecity-theme', theme);
         this.updateThemeElements();
     }
 };
@@ -694,7 +695,7 @@ const apiService = {
 
 ### 🎯 **How to Contribute**
 
-We welcome contributions from developers, designers, and community members! Here's how you can help improve JoziFix:
+We welcome contributions from developers, designers, and community members! Here's how you can help improve SafeCity:
 
 #### **🚀 Getting Started**
 
@@ -779,3 +780,240 @@ Brief description of changes
 - [ ] Mobile devices tested  
 - [ ] Accessibility validated
 - [ ] Dark mode verified
+
+## 📸 Screenshots
+Add screenshots for UI changes
+```
+
+### 🌟 **Feature Requests & Ideas**
+
+We're always looking for ways to improve SafeCity! Here are some areas where we'd love community input:
+
+#### **🔮 Upcoming Features**
+- **🌍 Multi-language Support**: Zulu, Afrikaans, Sotho translations
+- **📱 Mobile App**: Native iOS/Android applications
+- **🤖 AI Classification**: Automatic issue categorization from photos
+- **📊 Analytics Dashboard**: Advanced reporting for city officials
+- **🔔 Push Notifications**: Real-time updates on report status
+- **🎮 Gamification**: Points and badges for active community members
+- **🤝 Integration**: Connect with City of Johannesburg systems
+- **📍 Offline Mode**: Report issues without internet connection
+
+#### **🎯 Community Initiatives**
+- **🏫 Educational Outreach**: School and community workshops
+- **🏛️ Government Partnership**: Official city endorsement
+- **📱 Social Media Integration**: Share reports on social platforms
+- **🌱 Environmental Impact**: Carbon footprint tracking for fixes
+- **📈 Impact Metrics**: Measure community improvement over time
+
+---
+
+## 👥 Contributors
+
+### 🚀 **Core Development Team**
+
+<table>
+<tr>
+    <td align="center">
+        <a href="https://github.com/Uwami-Mgxekwa">
+            <img src="https://github.com/Uwami-Mgxekwa.png" width="100px;" alt="Uwami Mgxekwa"/>
+            <br />
+            <sub><b>Uwami Mgxekwa</b></sub>
+        </a>
+        <br />
+        <sub>💻 Lead Developer & Creator</sub>
+        <br />
+        <sub>🎨 UI/UX Design | ⚡ Full-Stack Development</sub>
+    </td>
+</tr>
+</table>
+
+### 🌟 **Project Leadership**
+
+**Uwami Mgxekwa** is the visionary behind SafeCity, bringing together technical expertise and community passion to create meaningful infrastructure solutions. With a focus on user-centered design and social impact, Uwami has developed SafeCity as a comprehensive platform that empowers citizens to actively participate in improving their communities.
+
+#### **🛠️ Technical Contributions**
+- **🏗️ Architecture Design**: Complete application structure and data flow
+- **💻 Frontend Development**: Responsive HTML5, CSS3, and JavaScript implementation
+- **🎨 UI/UX Design**: Modern, accessible interface with dark/light mode support
+- **📱 Mobile Optimization**: Cross-device compatibility and touch interactions
+- **♿ Accessibility**: WCAG 2.1 compliance and inclusive design principles
+- **🌙 Theme System**: Dynamic theming with user preference persistence
+- **📍 Geolocation Integration**: GPS-based location services and mapping
+- **📸 Media Handling**: Camera integration and photo upload functionality
+
+#### **🌍 Community Impact**
+- **📋 Requirements Gathering**: Community research and user needs analysis
+- **🎯 Product Vision**: Strategic roadmap for infrastructure reporting solutions
+- **📖 Documentation**: Comprehensive guides and technical documentation
+- **🤝 Open Source**: Making SafeCity freely available for community benefit
+
+### 🤝 **How to Become a Contributor**
+
+We welcome contributors of all skill levels! Here are ways you can get involved:
+
+#### **👩‍💻 For Developers**
+- **🐛 Bug Fixes**: Help identify and resolve issues
+- **✨ Feature Development**: Build new capabilities
+- **⚡ Performance**: Optimize loading and responsiveness
+- **🔧 Backend Development**: API and database design
+- **📱 Mobile Apps**: Native iOS/Android development
+
+#### **🎨 For Designers**
+- **🖼️ Visual Design**: Icons, graphics, and branding
+- **🎪 UX Research**: User experience testing and feedback
+- **♿ Accessibility**: Design inclusive interfaces
+- **📱 Mobile Design**: Touch-first interaction patterns
+
+#### **🌍 For Community Members**
+- **🗣️ Translation**: Multi-language support
+- **📝 Content**: Help text, tutorials, and guides
+- **🧪 Testing**: Cross-browser and device testing
+- **📢 Advocacy**: Spread awareness about SafeCity
+
+#### **🏛️ For Organizations**
+- **🤝 Partnerships**: Government and NGO collaboration
+- **💰 Sponsorship**: Support ongoing development
+- **📊 Data**: Provide real infrastructure data
+- **🎓 Education**: Workshop and training partnerships
+
+### 🙏 **Acknowledgments**
+
+Special thanks to:
+
+- **🏛️ City of Johannesburg**: Inspiration for civic engagement
+- **🌍 Open Source Community**: Tools and libraries that make SafeCity possible
+- **👥 Beta Testers**: Early users who provided valuable feedback
+- **🎓 Academic Partners**: Research and development support
+- **💻 Font Awesome**: Beautiful icons for enhanced user experience
+- **📱 Web API Standards**: Enabling modern browser capabilities
+
+---
+
+## 📄 License
+
+### 📜 **MIT License**
+
+```
+MIT License
+
+Copyright (c) 2024 Uwami Mgxekwa
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### 🌟 **Open Source Philosophy**
+
+SafeCity is built on the belief that community infrastructure tools should be:
+
+- **🆓 Free**: No cost barriers to access or improvement
+- **📖 Transparent**: Open source code for community review
+- **🤝 Collaborative**: Built with and for the community
+- **🌍 Inclusive**: Accessible to all users regardless of ability
+- **🚀 Innovative**: Encouraging experimentation and improvement
+
+### 📋 **Usage Rights**
+
+You are free to:
+- **✅ Use**: Run SafeCity for any purpose
+- **✅ Study**: Examine how SafeCity works
+- **✅ Modify**: Adapt SafeCity to your needs
+- **✅ Distribute**: Share SafeCity with others
+- **✅ Improve**: Contribute back to the community
+
+---
+
+## 💥 Contact
+
+### 📞 **Get in Touch**
+
+We'd love to hear from you! Whether you have questions, suggestions, or want to collaborate:
+
+#### **👨‍💻 Developer Contact**
+- **📧 Email**: [Contact via GitHub](https://github.com/Uwami-Mgxekwa)
+- **💻 GitHub**: [@Uwami-Mgxekwa](https://github.com/Uwami-Mgxekwa)
+- **📱 LinkedIn**: [Connect on LinkedIn](https://linkedin.com/in/uwami-mgxekwa)
+- **🐦 Twitter**: Follow for updates and announcements
+
+#### **🔗 Project Links**
+- **🌐 Live Demo**: [View SafeCity in Action](https://uwami-mgxekwa.github.io/SafeCityWeb/)
+- **📂 Source Code**: [GitHub Repository](https://github.com/Uwami-Mgxekwa/SafeCityWeb)
+- **🐛 Bug Reports**: [GitHub Issues](https://github.com/Uwami-Mgxekwa/SafeCityWeb/issues)
+- **💡 Feature Requests**: [GitHub Discussions](https://github.com/Uwami-Mgxekwa/SafeCityWeb/discussions)
+
+#### **🤝 Collaboration Opportunities**
+
+Interested in partnering with SafeCity? We're open to:
+
+- **🏛️ Government Partnerships**: Official adoption and integration
+- **🎓 Academic Collaboration**: Research and development projects  
+- **💼 Corporate Sponsorship**: Supporting ongoing development
+- **🌍 NGO Partnerships**: Community outreach and education
+- **👥 Community Groups**: Local implementation and feedback
+
+#### **📧 Contact Form**
+
+For detailed inquiries, please include:
+- **📝 Subject**: Brief description of your inquiry
+- **🏢 Organization**: Your company, government, or group (if applicable)
+- **📍 Location**: City or region of interest
+- **💭 Message**: Detailed description of how you'd like to engage
+
+#### **⚡ Quick Response Times**
+
+We aim to respond to:
+- **🐛 Bug Reports**: Within 48 hours
+- **💡 Feature Requests**: Within 1 week  
+- **🤝 Partnership Inquiries**: Within 3-5 business days
+- **❓ General Questions**: Within 24-48 hours
+
+---
+
+## 🎯 **Final Words**
+
+SafeCity represents more than just a web application – it's a vision of empowered communities working together to create better, safer cities for everyone. By combining modern web technologies with citizen engagement, we're building a platform that bridges the gap between community needs and government action.
+
+### 🌟 **Our Vision for the Future**
+
+- **🏙️ Smart Cities**: Integration with IoT sensors and city management systems
+- **🌍 Global Expansion**: Adapting SafeCity for cities worldwide
+- **🤖 AI Enhancement**: Machine learning for predictive maintenance
+- **📱 Mobile-First**: Native apps with offline capabilities
+- **🎮 Gamification**: Making civic engagement fun and rewarding
+
+### 🙏 **Thank You**
+
+Thank you for your interest in SafeCity. Together, we can build stronger, more responsive communities where every citizen has a voice in shaping their environment.
+
+**Let's make our cities safer, one report at a time.** 🚀
+
+---
+
+<div align="center">
+
+**🌟 Star this repository if you find SafeCity useful! 🌟**
+
+[![GitHub Stars](https://img.shields.io/github/stars/Uwami-Mgxekwa/SafeCityWeb?style=social)](https://github.com/Uwami-Mgxekwa/SafeCityWeb/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Uwami-Mgxekwa/SafeCityWeb?style=social)](https://github.com/Uwami-Mgxekwa/SafeCityWeb/network/members)
+[![GitHub Issues](https://img.shields.io/github/issues/Uwami-Mgxekwa/SafeCityWeb)](https://github.com/Uwami-Mgxekwa/SafeCityWeb/issues)
+[![GitHub Contributors](https://img.shields.io/github/contributors/Uwami-Mgxekwa/SafeCityWeb)](https://github.com/Uwami-Mgxekwa/SafeCityWeb/graphs/contributors)
+
+Made with ❤️ for the community by [Uwami Mgxekwa](https://github.com/Uwami-Mgxekwa)
+
+</div>
