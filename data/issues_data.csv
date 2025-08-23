@@ -1,0 +1,6 @@
+id,type,lat,lng,address,description,upvotes,status,date,photo
+1001,pothole,-26.2041,28.0473,"Main Road, Sandton","Large pothole causing traffic issues",45,new,2024-08-21T10:00:00Z,
+1002,water,-26.1715,28.0693,"Intersection, Rosebank","Water leak at major intersection",32,acknowledged,2024-08-23T15:30:00Z,
+1003,traffic,-26.1886,28.0074,"Traffic Light, Melville","Traffic light not working properly",28,new,2024-08-16T08:15:00Z,
+1004,streetlight,-26.2044,28.0566,"Park Road, Sandton","Street light broken for 3 days",15,new,2024-08-22T19:45:00Z,
+1005,drainage,-26.1950,28.0300,"Main Street, Braamfontein","Blocked drain causing flooding",22,acknowledged,2024-08-20T14:20:00Z,
