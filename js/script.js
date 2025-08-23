@@ -60,10 +60,10 @@ function initializeApp() {
     // Initialize location
     getCurrentLocation();
     
-    // Show initial section
+    // Show initial section and render markers
     showSection('map');
     
-    console.log('iGodi app initialized successfully');
+    console.log('SafeCity app initialized successfully');
 }
 
 // Navigation Functions
@@ -95,11 +95,135 @@ function showSection(sectionName) {
         
         // Update section-specific content
         if (sectionName === 'map') {
-            updateMapView();
+            renderMapMarkers();
         } else if (sectionName === 'stats') {
             updateStatsView();
         }
     }
+}
+
+// ENHANCED: Dynamic Map Marker Rendering
+function renderMapMarkers() {
+    const markersContainer = document.querySelector('.sample-markers');
+    if (!markersContainer) return;
+    
+    // Clear existing markers
+    markersContainer.innerHTML = '';
+    
+    // Filter reports based on current filter
+    const filteredReports = getFilteredReports();
+    
+    // Generate markers for each report
+    filteredReports.forEach((report, index) => {
+        const marker = createMarkerElement(report, index);
+        markersContainer.appendChild(marker);
+    });
+    
+    console.log(`Rendered ${filteredReports.length} markers for filter: ${appState.currentFilter}`);
+}
+
+function createMarkerElement(report, index) {
+    const marker = document.createElement('div');
+    marker.className = `marker ${report.type}`;
+    marker.setAttribute('data-issue', report.type);
+    marker.setAttribute('data-report-id', report.id);
+    
+    // Generate semi-random but consistent positioning based on report ID
+    const position = generateMarkerPosition(report.id, index);
+    marker.style.top = position.top;
+    marker.style.left = position.left;
+    
+    // Create marker icon
+    const icon = document.createElement('i');
+    icon.className = getIssueTypeIcon(report.type);
+    marker.appendChild(icon);
+    
+    // Create marker info popup
+    const markerInfo = createMarkerInfo(report);
+    marker.appendChild(markerInfo);
+    
+    // Add click event listener
+    marker.addEventListener('click', function() {
+        showIssueDetails(report);
+    });
+    
+    // Add hover effects
+    addMarkerHoverEffects(marker);
+    
+    return marker;
+}
+
+function createMarkerInfo(report) {
+    const markerInfo = document.createElement('div');
+    markerInfo.className = 'marker-info';
+    
+    const title = document.createElement('h4');
+    title.textContent = formatReportTitle(report);
+    markerInfo.appendChild(title);
+    
+    const timeAgo = document.createElement('p');
+    timeAgo.textContent = `Reported ${formatDate(report.date)}`;
+    markerInfo.appendChild(timeAgo);
+    
+    const upvotes = document.createElement('p');
+    upvotes.innerHTML = `<i class="fas fa-arrow-up"></i> ${report.upvotes} upvotes`;
+    markerInfo.appendChild(upvotes);
+    
+    const status = document.createElement('p');
+    status.textContent = `Status: ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}`;
+    status.style.color = getStatusColor(report.status);
+    status.style.fontWeight = 'bold';
+    markerInfo.appendChild(status);
+    
+    return markerInfo;
+}
+
+function generateMarkerPosition(reportId, index) {
+    // Use report ID as seed for consistent positioning
+    const seed = reportId % 1000;
+    const baseTop = 20 + (seed % 60); // 20-80%
+    const baseLeft = 15 + ((seed * 7) % 70); // 15-85%
+    
+    // Add slight offset based on index to prevent overlap
+    const offsetTop = (index * 5) % 15;
+    const offsetLeft = (index * 7) % 20;
+    
+    return {
+        top: `${Math.min(baseTop + offsetTop, 85)}%`,
+        left: `${Math.min(baseLeft + offsetLeft, 85)}%`
+    };
+}
+
+function addMarkerHoverEffects(marker) {
+    marker.addEventListener('mouseenter', function() {
+        this.style.transform = 'scale(1.2)';
+        this.style.zIndex = '100';
+    });
+    
+    marker.addEventListener('mouseleave', function() {
+        this.style.transform = 'scale(1)';
+        this.style.zIndex = '10';
+    });
+}
+
+function getFilteredReports() {
+    return appState.reports.filter(report => {
+        if (appState.currentFilter === 'all') return true;
+        return report.type === appState.currentFilter;
+    });
+}
+
+function formatReportTitle(report) {
+    const typeNames = {
+        pothole: 'Pothole',
+        water: 'Water Leak',
+        traffic: 'Traffic Light Issue',
+        streetlight: 'Street Light Issue',
+        drainage: 'Drainage Problem',
+        other: 'Other Issue'
+    };
+    
+    return typeNames[report.type] || 'Infrastructure Issue';
 }
 
 // Location Functions
@@ -216,13 +340,13 @@ function handleReportSubmission() {
     
     // Create report object
     const newReport = {
-        id: Date.now(),
+        id: generateReportId(),
         type: appState.selectedIssueType,
         location: {
             ...appState.currentLocation,
-            address: 'Current Location, Johannesburg'
+            address: generateLocationAddress()
         },
-        description: document.getElementById('description').value || '',
+        description: document.getElementById('description').value || `${formatReportTitle({type: appState.selectedIssueType})} reported by user`,
         photo: appState.uploadedPhoto,
         upvotes: 1,
         status: 'new',
@@ -241,11 +365,36 @@ function handleReportSubmission() {
         hideLoading();
         showSuccessModal(newReport.id);
         
-        // Update map if visible
+        // Re-render markers to include the new report
         if (appState.currentSection === 'map') {
-            updateMapView();
+            renderMapMarkers();
         }
+        
+        // Update stats if on stats page
+        if (appState.currentSection === 'stats') {
+            updateStatsView();
+        }
+        
+        console.log('New report added and markers updated:', newReport);
     }, 2000);
+}
+
+function generateLocationAddress() {
+    const johannesburgAreas = [
+        'Sandton',
+        'Rosebank',
+        'Melville',
+        'Braamfontein',
+        'Parktown',
+        'Houghton',
+        'Hyde Park',
+        'Randburg',
+        'Fourways',
+        'Midrand'
+    ];
+    
+    const randomArea = johannesburgAreas[Math.floor(Math.random() * johannesburgAreas.length)];
+    return `Current Location, ${randomArea}, Johannesburg`;
 }
 
 function resetReportForm() {
@@ -276,67 +425,115 @@ function setupMapListeners() {
             this.classList.add('active');
             
             appState.currentFilter = this.getAttribute('data-filter');
-            updateMapView();
-        });
-    });
-    
-    // Marker interactions
-    setupMarkerListeners();
-}
-
-function setupMarkerListeners() {
-    const markers = document.querySelectorAll('.marker');
-    markers.forEach(marker => {
-        marker.addEventListener('click', function() {
-            const issueType = this.getAttribute('data-issue');
-            showIssueDetails(issueType);
+            
+            // Re-render markers with new filter
+            renderMapMarkers();
         });
     });
 }
 
-function updateMapView() {
-    // Filter reports based on current filter
-    const filteredReports = appState.reports.filter(report => {
-        if (appState.currentFilter === 'all') return true;
-        return report.type === appState.currentFilter;
-    });
+function showIssueDetails(report) {
+    const details = `
+Issue Details:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: ${formatReportTitle(report)}
+Location: ${report.location.address}
+Description: ${report.description}
+Reported: ${formatDate(report.date)}
+Upvotes: ${report.upvotes}
+Status: ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+Report ID: #${report.id}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
     
-    // Update map markers (in a real app, this would update the actual map)
-    console.log(`Updating map view with ${filteredReports.length} reports for filter: ${appState.currentFilter}`);
+    alert(details);
     
-    // Update marker visibility
-    const markers = document.querySelectorAll('.marker');
-    markers.forEach(marker => {
-        const markerType = marker.getAttribute('data-issue');
-        if (appState.currentFilter === 'all' || appState.currentFilter === markerType) {
-            marker.style.display = 'flex';
-        } else {
-            marker.style.display = 'none';
-        }
-    });
+    // In a real app, this would open a detailed modal
+    // You could also implement upvoting here
 }
 
-function showIssueDetails(issueType) {
-    // Find report by type (simplified for demo)
-    const report = appState.reports.find(r => r.type === issueType);
-    if (report) {
-        alert(`Issue Details:\nType: ${report.type}\nLocation: ${report.location.address}\nUpvotes: ${report.upvotes}\nStatus: ${report.status}`);
-    }
-}
-
-// Stats Functions
+// ENHANCED: Stats Functions with Dynamic Data
 function updateStatsView() {
     const stats = calculateStats();
     
-    // Update stat cards (simplified - in real app would update actual DOM elements)
+    // Update stat cards with real data
+    const statCards = document.querySelectorAll('.stat-card');
+    if (statCards.length >= 4) {
+        // Total Reports
+        const totalReportsCard = statCards[0].querySelector('.stat-info h3');
+        if (totalReportsCard) {
+            totalReportsCard.textContent = stats.totalReports;
+        }
+        
+        // Resolved Issues
+        const resolvedCard = statCards[1].querySelector('.stat-info h3');
+        if (resolvedCard) {
+            resolvedCard.textContent = stats.resolvedReports;
+        }
+        
+        // Average Fix Time (simulated)
+        const avgTimeCard = statCards[2].querySelector('.stat-info h3');
+        if (avgTimeCard) {
+            avgTimeCard.textContent = stats.averageFixTime;
+        }
+        
+        // Active Users (simulated)
+        const activeUsersCard = statCards[3].querySelector('.stat-info h3');
+        if (activeUsersCard) {
+            activeUsersCard.textContent = stats.activeUsers;
+        }
+    }
+    
+    // Update top issues list
+    updateTopIssuesList();
+    
     console.log('Updated stats:', stats);
+}
+
+function updateTopIssuesList() {
+    const issueList = document.querySelector('.issue-list');
+    if (!issueList) return;
+    
+    // Get top 3 most upvoted recent reports
+    const topReports = appState.reports
+        .sort((a, b) => b.upvotes - a.upvotes)
+        .slice(0, 3);
+    
+    // Clear existing list
+    issueList.innerHTML = '';
+    
+    // Add top reports
+    topReports.forEach(report => {
+        const issueItem = createIssueListItem(report);
+        issueList.appendChild(issueItem);
+    });
+}
+
+function createIssueListItem(report) {
+    const issueItem = document.createElement('div');
+    issueItem.className = 'issue-item';
+    
+    issueItem.innerHTML = `
+        <div class="issue-details">
+            <h4>${formatReportTitle(report)}</h4>
+            <p>${report.location.address}</p>
+            <span class="issue-type-badge ${report.type}">${formatReportTitle(report)}</span>
+        </div>
+        <div class="issue-stats">
+            <span class="upvotes">
+                <i class="fas fa-arrow-up"></i> ${report.upvotes}
+            </span>
+            <span class="status ${report.status}">${report.status.charAt(0).toUpperCase() + report.status.slice(1)}</span>
+        </div>
+    `;
+    
+    return issueItem;
 }
 
 function calculateStats() {
     const totalReports = appState.reports.length;
     const resolvedReports = appState.reports.filter(r => r.status === 'resolved').length;
     const averageFixTime = 12; // Simulated
-    const activeUsers = 1234; // Simulated
+    const activeUsers = Math.max(1234 + (totalReports * 5), 1234); // Grows with reports
     
     return {
         totalReports,
@@ -457,8 +654,16 @@ function addUpvote(reportId) {
     const report = appState.reports.find(r => r.id === reportId);
     if (report) {
         report.upvotes += 1;
-        updateMapView();
-        updateStatsView();
+        
+        // Re-render markers and stats
+        if (appState.currentSection === 'map') {
+            renderMapMarkers();
+        }
+        if (appState.currentSection === 'stats') {
+            updateStatsView();
+        }
+        
+        console.log(`Upvoted report ${reportId}, new total: ${report.upvotes}`);
     }
 }
 
@@ -471,17 +676,25 @@ function searchReports(query) {
 }
 
 // Export functions for potential integration
-window.iGodiApp = {
+window.SafeCityApp = {
     state: appState,
     addReport: function(reportData) {
-        appState.reports.push({
+        const newReport = {
             id: generateReportId(),
             ...reportData,
             upvotes: 1,
             status: 'new',
             date: new Date()
-        });
-        updateMapView();
+        };
+        
+        appState.reports.push(newReport);
+        
+        // Re-render if on map view
+        if (appState.currentSection === 'map') {
+            renderMapMarkers();
+        }
+        
+        return newReport;
     },
     getReports: function() {
         return appState.reports;
@@ -490,29 +703,78 @@ window.iGodiApp = {
         const report = appState.reports.find(r => r.id === reportId);
         if (report) {
             Object.assign(report, updates);
-            updateMapView();
+            
+            // Re-render affected views
+            if (appState.currentSection === 'map') {
+                renderMapMarkers();
+            }
+            if (appState.currentSection === 'stats') {
+                updateStatsView();
+            }
+        }
+    },
+    renderMarkers: renderMapMarkers, // Expose for external use
+    addUpvote: addUpvote
+};
+
+// Theme Management (keeping existing functionality)
+const themeManager = {
+    currentTheme: 'light',
+    
+    init() {
+        // Check for saved theme preference or default to light
+        const savedTheme = localStorage.getItem('safecity-theme') || 'light';
+        this.setTheme(savedTheme);
+        this.setupThemeToggle();
+    },
+    
+    setTheme(theme) {
+        this.currentTheme = theme;
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('safecity-theme', theme);
+        this.updateThemeElements();
+    },
+    
+    toggleTheme() {
+        const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+        this.setTheme(newTheme);
+    },
+    
+    setupThemeToggle() {
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                this.toggleTheme();
+            });
+        }
+    },
+    
+    updateThemeElements() {
+        if (this.currentTheme === 'dark') {
+            this.applyDarkModeSpecificStyles();
+        } else {
+            this.applyLightModeSpecificStyles();
+        }
+    },
+    
+    applyDarkModeSpecificStyles() {
+        const mapPlaceholder = document.querySelector('.map-placeholder');
+        if (mapPlaceholder) {
+            mapPlaceholder.style.background = 'linear-gradient(45deg, #3a3a3a, #2d2d2d)';
+        }
+    },
+    
+    applyLightModeSpecificStyles() {
+        const mapPlaceholder = document.querySelector('.map-placeholder');
+        if (mapPlaceholder) {
+            mapPlaceholder.style.background = 'linear-gradient(45deg, #f0f2f5, #e1e8ed)';
         }
     }
 };
 
-// Service Worker registration (for PWA functionality)
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        // Service worker would be implemented for offline functionality
-        console.log('Service Worker support detected');
-    });
-}
-
-// Analytics and reporting (placeholder)
-function trackEvent(eventName, data) {
-    console.log(`Analytics: ${eventName}`, data);
-    // In production, would send to analytics service
-}
-
-// Error handling
-window.addEventListener('error', function(e) {
-    console.error('iGodi App Error:', e.error);
-    // In production, would report to error tracking service
+// Initialize theme management
+document.addEventListener('DOMContentLoaded', function() {
+    themeManager.init();
 });
 
 // Keyboard shortcuts
@@ -533,96 +795,17 @@ document.addEventListener('keydown', function(e) {
                 break;
         }
     }
-});
-
-
-
-// Theme Management
-const themeManager = {
-    currentTheme: 'light',
     
-    init() {
-        // Check for saved theme preference or default to light
-        const savedTheme = localStorage.getItem('igodi-theme') || 'light';
-        this.setTheme(savedTheme);
-        this.setupThemeToggle();
-    },
-    
-    setTheme(theme) {
-        this.currentTheme = theme;
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('igodi-theme', theme);
-        
-        // Update any theme-dependent elements
-        this.updateThemeElements();
-    },
-    
-    toggleTheme() {
-        const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-        this.setTheme(newTheme);
-        
-        // Track theme change
-        trackEvent('theme_changed', { theme: newTheme });
-    },
-    
-    setupThemeToggle() {
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                this.toggleTheme();
-            });
-        }
-    },
-    
-    updateThemeElements() {
-        // Update any elements that need special handling in dark mode
-        // This could include updating map markers, chart colors, etc.
-        if (this.currentTheme === 'dark') {
-            this.applyDarkModeSpecificStyles();
-        } else {
-            this.applyLightModeSpecificStyles();
-        }
-    },
-    
-    applyDarkModeSpecificStyles() {
-        // Apply any JavaScript-controlled dark mode styles
-        // For example, updating chart colors if you have any
-        const mapPlaceholder = document.querySelector('.map-placeholder');
-        if (mapPlaceholder) {
-            mapPlaceholder.style.background = 'linear-gradient(45deg, #3a3a3a, #2d2d2d)';
-        }
-    },
-    
-    applyLightModeSpecificStyles() {
-        // Apply any JavaScript-controlled light mode styles
-        const mapPlaceholder = document.querySelector('.map-placeholder');
-        if (mapPlaceholder) {
-            mapPlaceholder.style.background = 'linear-gradient(45deg, #f0f2f5, #e1e8ed)';
-        }
-    }
-};
-
-// Add theme initialization to your existing initializeApp function
-// Add this line inside your initializeApp() function:
-// themeManager.init();
-
-// Or if you prefer to initialize separately, add this to your DOMContentLoaded event:
-document.addEventListener('DOMContentLoaded', function() {
-    // ... your existing initialization code ...
-    themeManager.init();
-});
-
-// Keyboard shortcut for theme toggle (Ctrl/Cmd + Shift + T)
-document.addEventListener('keydown', function(e) {
+    // Theme toggle shortcut
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 't') {
         e.preventDefault();
         themeManager.toggleTheme();
     }
 });
 
-// Update your existing window.iGodiApp object to include theme management
-if (typeof window.iGodiApp !== 'undefined') {
-    window.iGodiApp.themeManager = themeManager;
-}
+// Error handling
+window.addEventListener('error', function(e) {
+    console.error('SafeCity App Error:', e.error);
+});
 
-console.log('iGodi JavaScript loaded successfully');
+console.log('SafeCity JavaScript with dynamic rendering loaded successfully');

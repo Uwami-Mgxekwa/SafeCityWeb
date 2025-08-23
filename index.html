@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SafeCity - Pothole & Public Fault Reporter</title>
+    <title>SafeCity -                                                                                                               Public Fault Reporter</title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="assets/logo-6.jpeg">
@@ -11,40 +11,40 @@
 <body>
     <!-- Header -->
     <header class="header">
-    <div class="container">
-        <div class="header-content">
-            <div class="logo">
-                <i class="fas fa-road"></i>
-                <h1>SafeCity</h1>
-                <span class="tagline">Report. Track. Fix.</span>
-            </div>
-            
-            <nav class="nav">
-                <button class="nav-btn active" data-section="map">
-                    <i class="fas fa-map"></i> Map
-                </button>
-                <button class="nav-btn" data-section="report">
-                    <i class="fas fa-plus-circle"></i> Report
-                </button>
-                <button class="nav-btn" data-section="stats">
-                    <i class="fas fa-chart-bar"></i> Stats
-                </button>
-            </nav>
-            
-            <div class="header-right">
-                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-                    <div class="toggle-track">
-                        <div class="toggle-thumb">
-                            <i class="fas fa-sun sun-icon"></i>
-                            <i class="fas fa-moon moon-icon"></i>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-road"></i>
+                    <h1>SafeCity</h1>
+                    <span class="tagline">Report. Track. Fix.</span>
+                </div>
+                
+                <nav class="nav">
+                    <button class="nav-btn active" data-section="map">
+                        <i class="fas fa-map"></i> Map
+                    </button>
+                    <button class="nav-btn" data-section="report">
+                        <i class="fas fa-plus-circle"></i> Report
+                    </button>
+                    <button class="nav-btn" data-section="stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                </nav>
+                
+                <div class="header-right">
+                    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                        <div class="toggle-track">
+                            <div class="toggle-thumb">
+                                <i class="fas fa-sun sun-icon"></i>
+                                <i class="fas fa-moon moon-icon"></i>
+                            </div>
                         </div>
-                    </div>
-                </button>
-					<img src="assets/logo-6.jpeg" alt="App Logo" class="header-logo">
-				</div>
-			</div>
-		</div>
-	</header>
+                    </button>
+                    <img src="assets/logo-6.jpeg" alt="App Logo" class="header-logo">
+                </div>
+            </div>
+        </div>
+    </header>
 
     <!-- Main Content -->
     <main class="main">
@@ -58,6 +58,8 @@
                         <button class="filter-btn" data-filter="pothole">Potholes</button>
                         <button class="filter-btn" data-filter="water">Water Leaks</button>
                         <button class="filter-btn" data-filter="traffic">Traffic Lights</button>
+                        <button class="filter-btn" data-filter="streetlight">Street Lights</button>
+                        <button class="filter-btn" data-filter="drainage">Drainage</button>
                         <button class="filter-btn" data-filter="other">Other</button>
                     </div>
                 </div>
@@ -66,31 +68,9 @@
                     <div class="map-placeholder">
                         <i class="fas fa-map-marked-alt"></i>
                         <p>Interactive map with issue markers</p>
-                        <div class="sample-markers">
-                            <div class="marker pothole" data-issue="pothole" style="top: 30%; left: 40%;">
-                                <i class="fas fa-exclamation-circle"></i>
-                                <div class="marker-info">
-                                    <h4>Large Pothole</h4>
-                                    <p>Reported 2 days ago</p>
-                                    <p>15 upvotes</p>
-                                </div>
-                            </div>
-                            <div class="marker water" data-issue="water" style="top: 60%; left: 70%;">
-                                <i class="fas fa-tint"></i>
-                                <div class="marker-info">
-                                    <h4>Water Leak</h4>
-                                    <p>Reported 5 hours ago</p>
-                                    <p>8 upvotes</p>
-                                </div>
-                            </div>
-                            <div class="marker traffic" data-issue="traffic" style="top: 45%; left: 25%;">
-                                <i class="fas fa-traffic-light"></i>
-                                <div class="marker-info">
-                                    <h4>Broken Traffic Light</h4>
-                                    <p>Reported 1 week ago</p>
-                                    <p>32 upvotes</p>
-                                </div>
-                            </div>
+                        <!-- Dynamic markers will be rendered here by JavaScript -->
+                        <div class="sample-markers" id="dynamic-markers">
+                            <!-- Markers will be dynamically generated here -->
                         </div>
                     </div>
                 </div>
@@ -202,7 +182,7 @@
                             <i class="fas fa-exclamation-triangle"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>247</h3>
+                            <h3>3</h3>
                             <p>Total Reports</p>
                         </div>
                     </div>
@@ -211,7 +191,7 @@
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div class="stat-info">
-                            <h3>89</h3>
+                            <h3>0</h3>
                             <p>Resolved Issues</p>
                         </div>
                     </div>
@@ -238,43 +218,18 @@
                 <div class="top-issues">
                     <h3>Most Reported Issues This Week</h3>
                     <div class="issue-list">
+                        <!-- Dynamic content will be populated here by JavaScript -->
                         <div class="issue-item">
                             <div class="issue-details">
-                                <h4>Large Pothole on Main Road</h4>
-                                <p>Sandton, Johannesburg</p>
-                                <span class="issue-type-badge pothole">Pothole</span>
+                                <h4>Loading issues...</h4>
+                                <p>Please wait while we load the latest reports</p>
+                                <span class="issue-type-badge other">Loading</span>
                             </div>
                             <div class="issue-stats">
                                 <span class="upvotes">
-                                    <i class="fas fa-arrow-up"></i> 45
+                                    <i class="fas fa-spinner fa-spin"></i>
                                 </span>
-                                <span class="status new">New</span>
-                            </div>
-                        </div>
-                        <div class="issue-item">
-                            <div class="issue-details">
-                                <h4>Water Leak at Intersection</h4>
-                                <p>Rosebank, Johannesburg</p>
-                                <span class="issue-type-badge water">Water Leak</span>
-                            </div>
-                            <div class="issue-stats">
-                                <span class="upvotes">
-                                    <i class="fas fa-arrow-up"></i> 32
-                                </span>
-                                <span class="status acknowledged">In Progress</span>
-                            </div>
-                        </div>
-                        <div class="issue-item">
-                            <div class="issue-details">
-                                <h4>Broken Traffic Light</h4>
-                                <p>Melville, Johannesburg</p>
-                                <span class="issue-type-badge traffic">Traffic Light</span>
-                            </div>
-                            <div class="issue-stats">
-                                <span class="upvotes">
-                                    <i class="fas fa-arrow-up"></i> 28
-                                </span>
-                                <span class="status new">New</span>
+                                <span class="status new">Loading</span>
                             </div>
                         </div>
                     </div>
