@@ -1,3 +1,20 @@
+let supabase; 
+
+// Function to initialize Supabase
+function initializeSupabase() {
+    if (typeof window.supabase !== 'undefined') {
+        const SUPABASE_URL = 'https://cifsceqaulhzhkvlgsla.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpZnNjZXFhdWxoemhrdmxnc2xhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5NDQxMzMsImV4cCI6MjA3MTUyMDEzM30.ywt4tUbKXMemF1FjJwKh4td46RqayaK4wJKYRfEw3RQ';
+        
+        if (!supabase) {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log('Supabase initialized successfully');
+        }
+        return true;
+    }
+    return false;
+}
+
 // Application State
 const appState = {
     currentSection: 'map',
@@ -6,41 +23,538 @@ const appState = {
     uploadedPhoto: null,
     reports: [],
     currentFilter: 'all',
-    dataSource: 'csv' // 'csv', 'firebase', 'supabase', etc.
+    dataSource: 'csv'
 };
 
-// Data loading functions
-async function loadDataFromCSV() {
-    try {
-        console.log('Loading data from CSV...');
-        const response = await fetch('data/issues_data.csv');
-        const csvText = await response.text();
+// Enhanced marker positioning
+function generateMarkerPosition(reportId, index) {
+    const mapWidth = 100;
+    const mapHeight = 100;
+    const seed = reportId % 10000;
+    const gridSize = Math.ceil(Math.sqrt(appState.reports.length)) || 1;
+    const gridX = (index % gridSize) * (mapWidth / gridSize);
+    const gridY = Math.floor(index / gridSize) * (mapHeight / gridSize);
+    const randomOffsetX = (seed % 20) - 10;
+    const randomOffsetY = ((seed * 7) % 20) - 10;
+    const finalX = Math.max(5, Math.min(85, gridX + randomOffsetX));
+    const finalY = Math.max(5, Math.min(85, gridY + randomOffsetY));
+    
+    return { top: `${finalY}%`, left: `${finalX}%` };
+}
+
+// Enhanced marker creation
+function createMarkerElement(report, index) {
+    const marker = document.createElement('div');
+    marker.className = `marker ${report.type}`;
+    marker.setAttribute('data-issue', report.type);
+    marker.setAttribute('data-report-id', report.id);
+    
+    const position = generateMarkerPosition(report.id, index);
+    marker.style.top = position.top;
+    marker.style.left = position.left;
+    
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        marker.style.width = '35px';
+        marker.style.height = '35px';
+        marker.style.fontSize = '14px';
+    }
+    
+    const icon = document.createElement('i');
+    icon.className = getIssueTypeIcon(report.type);
+    marker.appendChild(icon);
+    
+    const markerInfo = createMobileOptimizedMarkerInfo(report);
+    marker.appendChild(markerInfo);
+    
+    addMobileInteractions(marker, report);
+    
+    return marker;
+}
+
+// Mobile-optimized marker info
+function createMobileOptimizedMarkerInfo(report) {
+    const markerInfo = document.createElement('div');
+    markerInfo.className = 'marker-info';
+    
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+        markerInfo.style.minWidth = '180px';
+        markerInfo.style.fontSize = '12px';
+        markerInfo.style.bottom = '45px';
+    }
+    
+    const title = document.createElement('h4');
+    title.textContent = formatReportTitle(report);
+    title.style.fontSize = isMobile ? '13px' : '14px';
+    markerInfo.appendChild(title);
+    
+    const timeAgo = document.createElement('p');
+    timeAgo.textContent = formatDate(report.date);
+    markerInfo.appendChild(timeAgo);
+    
+    const upvotes = document.createElement('p');
+    upvotes.innerHTML = `<i class="fas fa-arrow-up"></i> ${report.upvotes}`;
+    markerInfo.appendChild(upvotes);
+    
+    const status = document.createElement('p');
+    status.textContent = report.status.charAt(0).toUpperCase() + report.status.slice(1);
+    status.style.color = getStatusColor(report.status);
+    status.style.fontWeight = 'bold';
+    markerInfo.appendChild(status);
+    
+    if (isMobile) {
+        const tapHint = document.createElement('p');
+        tapHint.textContent = 'Tap for details';
+        tapHint.style.fontSize = '10px';
+        tapHint.style.fontStyle = 'italic';
+        tapHint.style.color = '#999';
+        markerInfo.appendChild(tapHint);
+    }
+    
+    return markerInfo;
+}
+
+// Enhanced mobile interactions
+function addMobileInteractions(marker, report) {
+    let touchStartTime = 0;
+    
+    marker.addEventListener('touchstart', function(e) {
+        touchStartTime = Date.now();
+        this.style.transform = 'scale(1.1)';
+        this.style.zIndex = '100';
+    });
+    
+    marker.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        const touchDuration = Date.now() - touchStartTime;
         
-        const reports = parseCSVData(csvText);
-        appState.reports = reports;
+        if (touchDuration < 300) {
+            showMobileIssueDetails(report);
+        }
         
-        console.log(`Loaded ${reports.length} reports from CSV`);
-        return reports;
-    } catch (error) {
-        console.error('Error loading CSV data:', error);
-        // Fallback to sample data
-        return loadSampleData();
+        this.style.transform = 'scale(1)';
+        this.style.zIndex = '10';
+    });
+    
+    marker.addEventListener('click', function(e) {
+        e.stopPropagation();
+        showMobileIssueDetails(report);
+    });
+    
+    marker.addEventListener('mouseenter', function() {
+        if (window.innerWidth > 768) {
+            this.style.transform = 'scale(1.2)';
+            this.style.zIndex = '100';
+        }
+    });
+    
+    marker.addEventListener('mouseleave', function() {
+        if (window.innerWidth > 768) {
+            this.style.transform = 'scale(1)';
+            this.style.zIndex = '10';
+        }
+    });
+}
+
+// Mobile-optimized issue details
+function showMobileIssueDetails(report) {
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        showMobileIssueModal(report);
+    } else {
+        const details = `
+Issue: ${formatReportTitle(report)}
+Location: ${report.location.address}
+Description: ${report.description}
+Reported: ${formatDate(report.date)}
+Upvotes: ${report.upvotes}
+Status: ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+Report ID: #${report.id}`;
+        alert(details);
     }
 }
 
+// Mobile modal
+function showMobileIssueModal(report) {
+    const existingModal = document.getElementById('mobile-issue-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.id = 'mobile-issue-modal';
+    modal.className = 'mobile-issue-modal';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'mobile-modal-content';
+    
+    const modalHeader = document.createElement('div');
+    modalHeader.className = 'mobile-modal-header';
+    
+    const modalTitle = document.createElement('h3');
+    modalTitle.className = 'mobile-modal-title';
+    modalTitle.textContent = formatReportTitle(report);
+    
+    const closeButton = document.createElement('button');
+    closeButton.className = 'mobile-modal-close';
+    closeButton.innerHTML = '<i class="fas fa-times"></i>';
+    closeButton.onclick = () => hideMobileIssueModal();
+    
+    modalHeader.appendChild(modalTitle);
+    modalHeader.appendChild(closeButton);
+    
+    const modalBody = document.createElement('div');
+    modalBody.className = 'mobile-modal-body';
+    
+    const locationSection = document.createElement('div');
+    locationSection.className = 'mobile-modal-section';
+    locationSection.innerHTML = `
+        <h4>Location</h4>
+        <p><i class="fas fa-map-marker-alt"></i> ${report.location.address}</p>
+    `;
+    
+    const descriptionSection = document.createElement('div');
+    descriptionSection.className = 'mobile-modal-section';
+    descriptionSection.innerHTML = `
+        <h4>Description</h4>
+        <p>${report.description}</p>
+    `;
+    
+    const statusSection = document.createElement('div');
+    statusSection.className = 'mobile-modal-section';
+    const statusBadge = document.createElement('span');
+    statusBadge.className = `mobile-status-badge ${report.status}`;
+    statusBadge.textContent = report.status.charAt(0).toUpperCase() + report.status.slice(1);
+    
+    statusSection.innerHTML = '<h4>Status</h4>';
+    statusSection.appendChild(statusBadge);
+    
+    const timeSection = document.createElement('div');
+    timeSection.className = 'mobile-modal-section';
+    timeSection.innerHTML = `
+        <h4>Reported</h4>
+        <p><i class="fas fa-clock"></i> ${formatDate(report.date)}</p>
+    `;
+    
+    const upvoteSection = document.createElement('div');
+    upvoteSection.className = 'mobile-upvote-section';
+    
+    const upvoteCount = document.createElement('div');
+    upvoteCount.className = 'mobile-upvote-count';
+    upvoteCount.textContent = `${report.upvotes} upvotes`;
+    
+    const upvoteButton = document.createElement('button');
+    upvoteButton.className = 'mobile-upvote-btn';
+    upvoteButton.innerHTML = '<i class="fas fa-arrow-up"></i> Upvote This Issue';
+    upvoteButton.onclick = () => {
+        addUpvote(report.id);
+        upvoteCount.textContent = `${report.upvotes} upvotes`;
+    };
+    
+    upvoteSection.appendChild(upvoteCount);
+    upvoteSection.appendChild(upvoteButton);
+    
+    const reportIdSection = document.createElement('div');
+    reportIdSection.className = 'mobile-modal-section';
+    reportIdSection.innerHTML = `
+        <h4>Report ID</h4>
+        <p>#${report.id}</p>
+    `;
+    
+    modalBody.appendChild(locationSection);
+    modalBody.appendChild(descriptionSection);
+    modalBody.appendChild(statusSection);
+    modalBody.appendChild(timeSection);
+    modalBody.appendChild(upvoteSection);
+    modalBody.appendChild(reportIdSection);
+    
+    modalContent.appendChild(modalHeader);
+    modalContent.appendChild(modalBody);
+    modal.appendChild(modalContent);
+    
+    document.body.appendChild(modal);
+    
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            hideMobileIssueModal();
+        }
+    });
+}
+
+function hideMobileIssueModal() {
+    const modal = document.getElementById('mobile-issue-modal');
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
+    }
+}
+
+// Enhanced report submission
+async function handleReportSubmission() {
+    if (!appState.selectedIssueType) {
+        alert('Please select an issue type');
+        return;
+    }
+    
+    if (!appState.currentLocation) {
+        alert('Location is required. Please wait for location to be detected or update manually.');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const newReport = {
+            id: generateReportId(),
+            type: appState.selectedIssueType,
+            location: {
+                ...appState.currentLocation,
+                address: generateLocationAddress()
+            },
+            description: document.getElementById('description').value || `${formatReportTitle({type: appState.selectedIssueType})} reported by user`,
+            photo: appState.uploadedPhoto,
+            upvotes: 1,
+            status: 'new',
+            date: new Date()
+        };
+        
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        await saveReportWithBackup(newReport);
+        
+        appState.reports.push(newReport);
+        
+        resetReportForm();
+        
+        hideLoading();
+        showSuccessModal(newReport.id);
+        
+        if (appState.currentSection === 'map') {
+            renderMapMarkers();
+        }
+        if (appState.currentSection === 'stats') {
+            updateStatsView();
+        }
+        
+        console.log('New report submitted:', newReport);
+        
+    } catch (error) {
+        console.error('Error saving report:', error);
+        hideLoading();
+        alert('Error submitting report. Please try again.');
+    }
+}
+
+// Enhanced save function with Supabase support
+async function saveReportWithBackup(newReport) {
+    try {
+        if (supabase) {
+            const { data, error } = await supabase
+                .from('reports')
+                .insert([
+                    {
+                        id: newReport.id,
+                        type: newReport.type,
+                        lat: newReport.location.lat,
+                        lng: newReport.location.lng,
+                        address: newReport.location.address,
+                        description: newReport.description,
+                        photo: newReport.photo,
+                        upvotes: newReport.upvotes,
+                        status: newReport.status,
+                        date: newReport.date.toISOString()
+                    }
+                ]);
+                
+            if (error) {
+                console.error('Supabase insert error:', error);
+                throw error;
+            }
+            
+            console.log('Report saved to Supabase:', data);
+            return newReport;
+        }
+        
+        // Fallback to localStorage if Supabase not available
+        const reportForStorage = {
+            ...newReport,
+            date: newReport.date.toISOString()
+        };
+        
+        const existingReports = JSON.parse(localStorage.getItem('safecity-reports') || '[]');
+        existingReports.push(reportForStorage);
+        localStorage.setItem('safecity-reports', JSON.stringify(existingReports));
+        
+        console.log('Report saved to localStorage');
+        return newReport;
+        
+    } catch (error) {
+        console.error('Error saving report:', error);
+        throw error;
+    }
+}
+
+// Generate CSV content
+function generateCSVContent(reports) {
+    const headers = ['id', 'type', 'lat', 'lng', 'address', 'description', 'upvotes', 'status', 'date', 'photo'];
+    
+    const csvRows = [headers.join(',')];
+    
+    reports.forEach(report => {
+        let dateValue;
+        if (report.date instanceof Date) {
+            dateValue = report.date.toISOString();
+        } else if (typeof report.date === 'string') {
+            dateValue = report.date;
+        } else {
+            dateValue = new Date().toISOString();
+        }
+        
+        const row = [
+            report.id,
+            report.type,
+            report.location.lat,
+            report.location.lng,
+            `"${report.location.address.replace(/"/g, '""')}"`,
+            `"${report.description.replace(/"/g, '""')}"`,
+            report.upvotes,
+            report.status,
+            dateValue,
+            report.photo || ''
+        ];
+        csvRows.push(row.join(','));
+    });
+    
+    return csvRows.join('\n');
+}
+
+// Load data with fallback
+async function loadDataWithBackup() {
+    try {
+        console.log('Loading data from CSV...');
+        const response = await fetch('data/issues_data.csv');
+        
+        if (response.ok) {
+            const csvText = await response.text();
+            const csvReports = parseCSVData(csvText);
+            
+            const localReports = JSON.parse(localStorage.getItem('safecity-reports') || '[]');
+            
+            localReports.forEach(localReport => {
+                localReport.date = new Date(localReport.date);
+            });
+            
+            const allReports = [...csvReports];
+            localReports.forEach(localReport => {
+                if (!allReports.find(r => r.id === localReport.id)) {
+                    allReports.push(localReport);
+                }
+            });
+            
+            appState.reports = allReports;
+            console.log(`Loaded ${allReports.length} reports (${csvReports.length} from CSV, ${localReports.length} from localStorage)`);
+            
+            return allReports;
+        }
+    } catch (error) {
+        console.error('Error loading CSV data:', error);
+    }
+    
+    try {
+        const localReports = JSON.parse(localStorage.getItem('safecity-reports') || '[]');
+        localReports.forEach(report => {
+            report.date = new Date(report.date);
+        });
+        
+        if (localReports.length > 0) {
+            appState.reports = localReports;
+            console.log(`Loaded ${localReports.length} reports from localStorage`);
+            return localReports;
+        }
+    } catch (error) {
+        console.error('Error loading from localStorage:', error);
+    }
+    
+    return loadSampleData();
+}
+
+// Render map markers
+function renderMapMarkers() {
+    const markersContainer = document.querySelector('.sample-markers');
+    if (!markersContainer) return;
+    
+    markersContainer.innerHTML = '';
+    
+    const filteredReports = getFilteredReports();
+    
+    filteredReports.sort((a, b) => b.upvotes - a.upvotes);
+    
+    filteredReports.forEach((report, index) => {
+        const marker = createMarkerElement(report, index);
+        markersContainer.appendChild(marker);
+    });
+    
+    console.log(`Rendered ${filteredReports.length} markers for filter: ${appState.currentFilter}`);
+}
+
+// Load data from Supabase
+async function loadFromSupabase() {
+    try {
+        if (!supabase) return [];
+        
+        const { data, error } = await supabase
+            .from('reports')
+            .select('*');
+            
+        if (error) {
+            console.error('Error loading data from Supabase:', error);
+            return [];
+        }
+        
+        const processedReports = data.map(item => ({
+            id: item.id,
+            type: item.type,
+            location: {
+                lat: item.lat,
+                lng: item.lng,
+                address: item.address
+            },
+            description: item.description,
+            photo: item.photo,
+            upvotes: item.upvotes,
+            status: item.status,
+            date: new Date(item.date)
+        }));
+        
+        console.log(`Loaded ${processedReports.length} reports from Supabase`);
+        return processedReports;
+        
+    } catch (error) {
+        console.error('Error loading from Supabase:', error);
+        return [];
+    }
+}
+
+// Parse CSV data
 function parseCSVData(csvText) {
     const lines = csvText.trim().split('\n');
     const headers = parseCSVLine(lines[0]);
     const reports = [];
     
-    console.log('CSV Headers:', headers); // Debug log
-    
     for (let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue; // Skip empty lines
+        if (!lines[i].trim()) continue;
         
         const values = parseCSVLine(lines[i]);
         
-        if (values.length >= 8) { // At least 8 required columns
+        if (values.length >= 8) {
             const report = {
                 id: parseInt(values[0]) || Date.now() + i,
                 type: (values[1] || '').toLowerCase().trim(),
@@ -56,22 +570,14 @@ function parseCSVData(csvText) {
                 photo: values[9] || null
             };
             
-            console.log(`Parsed report ${i}:`, { 
-                id: report.id, 
-                type: report.type, 
-                upvotes: report.upvotes,
-                rawUpvotes: values[6]
-            }); // Debug log
             reports.push(report);
-        } else {
-            console.warn(`Row ${i} has insufficient columns (${values.length}):`, values);
         }
     }
     
     return reports;
 }
 
-// Helper function to properly parse CSV lines with quoted fields
+// Helper functions for CSV parsing
 function parseCSVLine(line) {
     const result = [];
     let current = '';
@@ -94,13 +600,11 @@ function parseCSVLine(line) {
     return result;
 }
 
-// Helper function to clean strings (remove quotes, trim)
 function cleanString(str) {
     if (!str) return '';
     return str.replace(/^["']|["']$/g, '').trim();
 }
 
-// Helper function to parse dates with fallback
 function parseDate(dateStr) {
     if (!dateStr) return new Date();
     
@@ -108,26 +612,9 @@ function parseDate(dateStr) {
     return isNaN(parsed.getTime()) ? new Date() : parsed;
 }
 
-async function saveReportToCSV(newReport) {
-    // Note: Direct CSV saving from browser requires server-side support
-    // For now, we'll just add to memory and log for server implementation
-    console.log('New report to save to CSV:', newReport);
-    
-    // In a real implementation, you'd send this to your server:
-    // await fetch('/api/save-report', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(newReport)
-    // });
-    
-    // For demo, just add to current session
-    appState.reports.push(newReport);
-    
-    return newReport;
-}
-
 // Sample data fallback
 function loadSampleData() {
+    console.log('Loading sample data...');
     return [
         {
             id: 1001,
@@ -165,109 +652,42 @@ function loadSampleData() {
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
-    themeManager.init(); // Initialize theme management
+    themeManager.init();
 });
 
+// Single app initialization function
 async function initializeApp() {
     console.log('Initializing SafeCity app...');
     
-    // Load data based on configuration
+    const supabaseInitialized = initializeSupabase();
+    
     try {
-        if (appState.dataSource === 'csv') {
-            await loadDataFromCSV();
+        if (supabaseInitialized) {
+            const supabaseReports = await loadFromSupabase();
+            if (supabaseReports.length > 0) {
+                appState.reports = supabaseReports;
+            } else {
+                await loadDataWithBackup();
+            }
         } else {
-            // Fallback to sample data
-            appState.reports = loadSampleData();
+            console.log('Supabase not available, using fallback data source');
+            await loadDataWithBackup();
         }
     } catch (error) {
         console.error('Error initializing data:', error);
         appState.reports = loadSampleData();
     }
     
-    // Set up event listeners
     setupNavigationListeners();
     setupReportFormListeners();
     setupMapListeners();
     setupModalListeners();
     
-    // Initialize location
     getCurrentLocation();
     
-    // Show initial section and render markers
     showSection('map');
     
     console.log('SafeCity app initialized successfully with', appState.reports.length, 'reports');
-}
-
-// Enhanced report submission with data persistence
-async function handleReportSubmission() {
-    // Validate form
-    if (!appState.selectedIssueType) {
-        alert('Please select an issue type');
-        return;
-    }
-    
-    if (!appState.currentLocation) {
-        alert('Location is required. Please wait for location to be detected or update manually.');
-        return;
-    }
-    
-    // Show loading
-    showLoading();
-    
-    // Create report object
-    const newReport = {
-        id: generateReportId(),
-        type: appState.selectedIssueType,
-        location: {
-            ...appState.currentLocation,
-            address: generateLocationAddress()
-        },
-        description: document.getElementById('description').value || `${formatReportTitle({type: appState.selectedIssueType})} reported by user`,
-        photo: appState.uploadedPhoto,
-        upvotes: 1,
-        status: 'new',
-        date: new Date()
-    };
-    
-    try {
-        // Save report (this will depend on your chosen backend)
-        await saveReportToCSV(newReport);
-        
-        // Reset form
-        resetReportForm();
-        
-        // Hide loading and show success
-        hideLoading();
-        showSuccessModal(newReport.id);
-        
-        // Refresh the map with new data
-        await refreshMapData();
-        
-        // Update stats if on stats page
-        if (appState.currentSection === 'stats') {
-            updateStatsView();
-        }
-        
-        console.log('New report submitted and saved:', newReport);
-    } catch (error) {
-        console.error('Error saving report:', error);
-        hideLoading();
-        alert('Error submitting report. Please try again.');
-    }
-}
-
-// Function to refresh map data after new submission
-async function refreshMapData() {
-    if (appState.dataSource === 'csv') {
-        // Reload from CSV file to get any new data
-        await loadDataFromCSV();
-    }
-    
-    // Re-render markers with updated data
-    if (appState.currentSection === 'map') {
-        renderMapMarkers();
-    }
 }
 
 // Navigation Functions
@@ -279,7 +699,6 @@ function setupNavigationListeners() {
             const section = this.getAttribute('data-section');
             showSection(section);
             
-            // Update active nav button
             navButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
         });
@@ -287,145 +706,20 @@ function setupNavigationListeners() {
 }
 
 function showSection(sectionName) {
-    // Hide all sections
     const sections = document.querySelectorAll('.section');
     sections.forEach(section => section.classList.remove('active'));
     
-    // Show selected section
     const targetSection = document.getElementById(`${sectionName}-section`);
     if (targetSection) {
         targetSection.classList.add('active');
         appState.currentSection = sectionName;
         
-        // Update section-specific content
         if (sectionName === 'map') {
             renderMapMarkers();
         } else if (sectionName === 'stats') {
             updateStatsView();
         }
     }
-}
-
-// Map marker rendering
-function renderMapMarkers() {
-    const markersContainer = document.querySelector('.sample-markers');
-    if (!markersContainer) return;
-    
-    // Clear existing markers
-    markersContainer.innerHTML = '';
-    
-    // Filter reports based on current filter
-    const filteredReports = getFilteredReports();
-    
-    // Generate markers for each report
-    filteredReports.forEach((report, index) => {
-        const marker = createMarkerElement(report, index);
-        markersContainer.appendChild(marker);
-    });
-    
-    console.log(`Rendered ${filteredReports.length} markers for filter: ${appState.currentFilter}`);
-}
-
-function createMarkerElement(report, index) {
-    const marker = document.createElement('div');
-    marker.className = `marker ${report.type}`;
-    marker.setAttribute('data-issue', report.type);
-    marker.setAttribute('data-report-id', report.id);
-    
-    // Generate semi-random but consistent positioning based on report ID
-    const position = generateMarkerPosition(report.id, index);
-    marker.style.top = position.top;
-    marker.style.left = position.left;
-    
-    // Create marker icon
-    const icon = document.createElement('i');
-    icon.className = getIssueTypeIcon(report.type);
-    marker.appendChild(icon);
-    
-    // Create marker info popup
-    const markerInfo = createMarkerInfo(report);
-    marker.appendChild(markerInfo);
-    
-    // Add click event listener
-    marker.addEventListener('click', function() {
-        showIssueDetails(report);
-    });
-    
-    // Add hover effects
-    addMarkerHoverEffects(marker);
-    
-    return marker;
-}
-
-function createMarkerInfo(report) {
-    const markerInfo = document.createElement('div');
-    markerInfo.className = 'marker-info';
-    
-    const title = document.createElement('h4');
-    title.textContent = formatReportTitle(report);
-    markerInfo.appendChild(title);
-    
-    const timeAgo = document.createElement('p');
-    timeAgo.textContent = `Reported ${formatDate(report.date)}`;
-    markerInfo.appendChild(timeAgo);
-    
-    const upvotes = document.createElement('p');
-    upvotes.innerHTML = `<i class="fas fa-arrow-up"></i> ${report.upvotes} upvotes`;
-    markerInfo.appendChild(upvotes);
-    
-    const status = document.createElement('p');
-    status.textContent = `Status: ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}`;
-    status.style.color = getStatusColor(report.status);
-    status.style.fontWeight = 'bold';
-    markerInfo.appendChild(status);
-    
-    return markerInfo;
-}
-
-function generateMarkerPosition(reportId, index) {
-    const seed = reportId % 1000;
-    const baseTop = 20 + (seed % 60);
-    const baseLeft = 15 + ((seed * 7) % 70);
-    
-    const offsetTop = (index * 5) % 15;
-    const offsetLeft = (index * 7) % 20;
-    
-    return {
-        top: `${Math.min(baseTop + offsetTop, 85)}%`,
-        left: `${Math.min(baseLeft + offsetLeft, 85)}%`
-    };
-}
-
-function addMarkerHoverEffects(marker) {
-    marker.addEventListener('mouseenter', function() {
-        this.style.transform = 'scale(1.2)';
-        this.style.zIndex = '100';
-    });
-    
-    marker.addEventListener('mouseleave', function() {
-        this.style.transform = 'scale(1)';
-        this.style.zIndex = '10';
-    });
-}
-
-function getFilteredReports() {
-    return appState.reports.filter(report => {
-        if (appState.currentFilter === 'all') return true;
-        return report.type === appState.currentFilter;
-    });
-}
-
-function formatReportTitle(report) {
-    const typeNames = {
-        pothole: 'Pothole',
-        water: 'Water Leak',
-        traffic: 'Traffic Light Issue',
-        streetlight: 'Street Light Issue',
-        drainage: 'Drainage Problem',
-        other: 'Other Issue'
-    };
-    
-    return typeNames[report.type] || 'Infrastructure Issue';
 }
 
 // Location Functions
@@ -534,11 +828,12 @@ function resetReportForm() {
     
     const photoPreview = document.getElementById('photo-preview');
     const photoInput = document.getElementById('photo-input');
-    photoPreview.style.display = 'none';
-    photoInput.value = '';
+    if (photoPreview) photoPreview.style.display = 'none';
+    if (photoInput) photoInput.value = '';
     appState.uploadedPhoto = null;
     
-    document.getElementById('description').value = '';
+    const descriptionField = document.getElementById('description');
+    if (descriptionField) descriptionField.value = '';
 }
 
 // Map Functions
@@ -555,20 +850,24 @@ function setupMapListeners() {
     });
 }
 
-function showIssueDetails(report) {
-    const details = `
-Issue Details:
-────────────────────────────────────────
-Type: ${formatReportTitle(report)}
-Location: ${report.location.address}
-Description: ${report.description}
-Reported: ${formatDate(report.date)}
-Upvotes: ${report.upvotes}
-Status: ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}
-Report ID: #${report.id}
-────────────────────────────────────────`;
+function getFilteredReports() {
+    return appState.reports.filter(report => {
+        if (appState.currentFilter === 'all') return true;
+        return report.type === appState.currentFilter;
+    });
+}
+
+function formatReportTitle(report) {
+    const typeNames = {
+        pothole: 'Pothole',
+        water: 'Water Leak',
+        traffic: 'Traffic Light Issue',
+        streetlight: 'Street Light Issue',
+        drainage: 'Drainage Problem',
+        other: 'Other Issue'
+    };
     
-    alert(details);
+    return typeNames[report.type] || 'Infrastructure Issue';
 }
 
 // Stats Functions
@@ -709,7 +1008,6 @@ const themeManager = {
     currentTheme: 'light',
     
     init() {
-        // Check for saved theme preference or default to light
         const savedTheme = localStorage.getItem('safecity-theme') || 'light';
         this.setTheme(savedTheme);
         this.setupThemeToggle();
@@ -765,7 +1063,6 @@ function addUpvote(reportId) {
     if (report) {
         report.upvotes += 1;
         
-        // Re-render markers and stats
         if (appState.currentSection === 'map') {
             renderMapMarkers();
         }
@@ -785,7 +1082,22 @@ function searchReports(query) {
     );
 }
 
-// Export functions for potential integration
+// Export function to download reports as CSV
+function downloadReportsAsCSV() {
+    const csvContent = generateCSVContent(appState.reports);
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `safecity-reports-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+// Export functions for integration
 window.SafeCityApp = {
     state: appState,
     addReport: function(reportData) {
@@ -799,7 +1111,6 @@ window.SafeCityApp = {
         
         appState.reports.push(newReport);
         
-        // Re-render if on map view
         if (appState.currentSection === 'map') {
             renderMapMarkers();
         }
@@ -814,7 +1125,6 @@ window.SafeCityApp = {
         if (report) {
             Object.assign(report, updates);
             
-            // Re-render affected views
             if (appState.currentSection === 'map') {
                 renderMapMarkers();
             }
@@ -824,7 +1134,8 @@ window.SafeCityApp = {
         }
     },
     renderMarkers: renderMapMarkers,
-    addUpvote: addUpvote
+    addUpvote: addUpvote,
+    downloadCSV: downloadReportsAsCSV
 };
 
 // Keyboard shortcuts
@@ -846,10 +1157,22 @@ document.addEventListener('keydown', function(e) {
         }
     }
     
-    // Theme toggle shortcut
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 't') {
         e.preventDefault();
         themeManager.toggleTheme();
+    }
+    
+    if (e.key === 'Escape') {
+        hideMobileIssueModal();
+    }
+});
+
+// Window resize handler
+window.addEventListener('resize', function() {
+    if (appState.currentSection === 'map') {
+        setTimeout(() => {
+            renderMapMarkers();
+        }, 100);
     }
 });
 
@@ -879,7 +1202,7 @@ function getIssueTypeIcon(type) {
         water: 'fas fa-tint',
         traffic: 'fas fa-traffic-light',
         streetlight: 'fas fa-lightbulb',
-        drainage: 'fas fa-drain',
+        drainage: 'fas fa-water',
         other: 'fas fa-tools'
     };
     return icons[type] || icons.other;
@@ -911,4 +1234,4 @@ window.addEventListener('error', function(e) {
     console.error('SafeCity App Error:', e.error);
 });
 
-console.log('SafeCity JavaScript with CSV data loading and theme management initialized successfully');
+console.log('SafeCity JavaScript with enhanced mobile UX, CSV persistence, and theme management initialized successfully');
