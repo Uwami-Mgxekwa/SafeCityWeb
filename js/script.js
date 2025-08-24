@@ -817,7 +817,6 @@ function filterReportsByCity(reports, userCity) {
 }
 
 // Load data from Supabase with city filtering
-// Alternative: Load ALL reports (no city filtering)
 async function loadFromSupabase() {
   try {
     if (!supabase) return [];
