@@ -3,270 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SafeCity -                                                                                                               Public Fault Reporter</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>SafeCity - Loading...</title>
     <link rel="icon" type="image/png" href="assets/logo-6.jpeg">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .loading {
+            text-align: center;
+            color: white;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .alert.success {
+            background-color: #4CAF50;
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <i class="fas fa-road"></i>
-                    <h1>SafeCity</h1>
-                    <span class="tagline">Report. Track. Fix.</span>
-                </div>
-                
-                <nav class="nav">
-                    <button class="nav-btn active" data-section="map">
-                        <i class="fas fa-map"></i> Map
-                    </button>
-                    <button class="nav-btn" data-section="report">
-                        <i class="fas fa-plus-circle"></i> Report
-                    </button>
-                    <button class="nav-btn" data-section="stats">
-                        <i class="fas fa-chart-bar"></i> Stats
-                    </button>
-                </nav>
-                
-                <div class="header-right">
-                    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-                        <div class="toggle-track">
-                            <div class="toggle-thumb">
-                                <i class="fas fa-sun sun-icon"></i>
-                                <i class="fas fa-moon moon-icon"></i>
-                            </div>
-                        </div>
-                    </button>
-                    <img src="assets/logo-6.jpeg" alt="App Logo" class="header-logo">
-                </div>
-            </div>
-        </div>
-    </header>
+    <div class="loading">
+        <div class="spinner"></div>
+        <h2>SafeCity</h2>
+        <p>Loading application...</p>
+    </div>
 
-    <!-- Main Content -->
-    <main class="main">
-        <!-- Map Section -->
-        <section id="map-section" class="section active">
-            <div class="map-container">
-                <div class="map-header">
-                    <h2>Live Infrastructure Issues Map</h2>
-                    <div class="map-filters">
-                        <button class="filter-btn active" data-filter="all">All Issues</button>
-                        <button class="filter-btn" data-filter="pothole">Potholes</button>
-                        <button class="filter-btn" data-filter="water">Water Leaks</button>
-                        <button class="filter-btn" data-filter="traffic">Traffic Lights</button>
-                        <button class="filter-btn" data-filter="streetlight">Street Lights</button>
-                        <button class="filter-btn" data-filter="drainage">Drainage</button>
-                        <button class="filter-btn" data-filter="other">Other</button>
-                    </div>
-                </div>
-                <div class="map" id="map">
-                    <!-- Map will be rendered here -->
-                    <div class="map-placeholder">
-                        <i class="fas fa-map-marked-alt"></i>
-                        <p>Interactive map with issue markers</p>
-                        <!-- Dynamic markers will be rendered here by JavaScript -->
-                        <div class="sample-markers" id="dynamic-markers">
-                            <!-- Markers will be dynamically generated here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div id="alert" class="alert" style="display: none;"></div>
+
+    <script>
+        // Function to show alert messages
+        function showAlert(type, message) {
+            const alertEl = document.getElementById('alert');
+            alertEl.textContent = message;
+            alertEl.className = 'alert ' + type;
+            alertEl.style.display = 'block';
             
-            <!-- Legend -->
-            <div class="legend">
-                <h3>Legend</h3>
-                <div class="legend-items">
-                    <div class="legend-item">
-                        <span class="legend-color new"></span>
-                        <span>New (0-7 days)</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color acknowledged"></span>
-                        <span>Acknowledged</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-color resolved"></span>
-                        <span>Resolved</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+            // Hide alert after 5 seconds
+            setTimeout(() => {
+                alertEl.style.display = 'none';
+            }, 5000);
+        }
 
-        <!-- Report Section -->
-        <section id="report-section" class="section">
-            <div class="report-container">
-                <h2>Report an Issue</h2>
-                <div class="report-form">
-                    <div class="location-info">
-                        <div class="location-display">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span id="current-location">Getting your location...</span>
-                        </div>
-                        <button class="btn-secondary" id="get-location">
-                            <i class="fas fa-crosshairs"></i> Update Location
-                        </button>
-                    </div>
-
-                    <div class="issue-types">
-                        <h3>Select Issue Type</h3>
-                        <div class="issue-grid">
-                            <button class="issue-type" data-type="pothole">
-                                <i class="fas fa-road"></i>
-                                <span>Pothole</span>
-                            </button>
-                            <button class="issue-type" data-type="water">
-                                <i class="fas fa-tint"></i>
-                                <span>Water Leak</span>
-                            </button>
-                            <button class="issue-type" data-type="traffic">
-                                <i class="fas fa-traffic-light"></i>
-                                <span>Traffic Light</span>
-                            </button>
-                            <button class="issue-type" data-type="streetlight">
-                                <i class="fas fa-lightbulb"></i>
-                                <span>Street Light</span>
-                            </button>
-                            <button class="issue-type" data-type="drainage">
-                                <i class="fas fa-drain"></i>
-                                <span>Drainage</span>
-                            </button>
-                            <button class="issue-type" data-type="other">
-                                <i class="fas fa-tools"></i>
-                                <span>Other</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="photo-section">
-                        <h3>Add Photo</h3>
-                        <div class="photo-upload">
-                            <input type="file" id="photo-input" accept="image/*" capture="environment">
-                            <label for="photo-input" class="photo-upload-btn">
-                                <i class="fas fa-camera"></i>
-                                <span>Take Photo</span>
-                            </label>
-                            <div class="photo-preview" id="photo-preview" style="display: none;">
-                                <img id="preview-image" alt="Preview">
-                                <button class="remove-photo" id="remove-photo">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="description-section">
-                        <h3>Description (Optional)</h3>
-                        <textarea id="description" placeholder="Provide additional details about the issue..."></textarea>
-                    </div>
-
-                    <button class="btn-primary submit-btn" id="submit-report">
-                        <i class="fas fa-paper-plane"></i>
-                        Submit Report
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Stats Section -->
-        <section id="stats-section" class="section">
-            <div class="stats-container">
-                <h2>Community Impact Dashboard</h2>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>3</h3>
-                            <p>Total Reports</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon resolved">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>0</h3>
-                            <p>Resolved Issues</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>12</h3>
-                            <p>Days Average Fix Time</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3>1,234</h3>
-                            <p>Active Users</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="top-issues">
-                    <h3>Most Reported Issues This Week</h3>
-                    <div class="issue-list">
-                        <!-- Dynamic content will be populated here by JavaScript -->
-                        <div class="issue-item">
-                            <div class="issue-details">
-                                <h4>Loading issues...</h4>
-                                <p>Please wait while we load the latest reports</p>
-                                <span class="issue-type-badge other">Loading</span>
-                            </div>
-                            <div class="issue-stats">
-                                <span class="upvotes">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                </span>
-                                <span class="status new">Loading</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Success Modal -->
-    <div class="modal" id="success-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <i class="fas fa-check-circle success-icon"></i>
-                <h2>Report Submitted!</h2>
-            </div>
-            <div class="modal-body">
-                <p>Thank you for making your community better. Your report has been submitted and will be reviewed by local authorities.</p>
-                <div class="report-id">
-                    <strong>Report ID: #<span id="report-id"></span></strong>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary" id="close-modal">Continue</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loading-overlay" style="display: none;">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Submitting report...</p>
-        </div>
-    </div>
-
-    <script src="js/script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        // Check authentication and redirect accordingly
+        function checkAuthAndRedirect() {
+            const rememberedUser = localStorage.getItem('safecity-user');
+            
+            if (rememberedUser) {
+                // User is authenticated, redirect to main app
+                window.location.replace('pages/dashboard.html');
+            } else {
+                // User not authenticated, redirect to login
+                window.location.replace('pages/auth.html');
+            }
+        }
+        
+        // Show welcome message if this is a new signup
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('signup') === 'success') {
+            showAlert('success', 'Welcome to SafeCity! Please check your email to verify your account, then sign in.');
+        }
+        
+        // Redirect after a brief delay to show the loading animation
+        setTimeout(checkAuthAndRedirect, 2000);
+    </script>
 </body>
 </html>

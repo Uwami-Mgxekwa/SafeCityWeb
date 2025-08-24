@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeCity - Public Fault Reporter</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../assets/logo-6.jpeg">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-road"></i>
+                    <h1>SafeCity</h1>
+                    <span class="tagline">Report. Track. Fix.</span>
+                </div>
+                
+                <nav class="nav">
+                    <button class="nav-btn active" data-section="map">
+                        <i class="fas fa-map"></i> Map
+                    </button>
+                    <button class="nav-btn" data-section="report">
+                        <i class="fas fa-plus-circle"></i> Report
+                    </button>
+                    <button class="nav-btn" data-section="stats">
+                        <i class="fas fa-chart-bar"></i> Stats
+                    </button>
+                    <button class="nav-btn" data-section="profile">
+                        <i class="fas fa-user"></i> Profile
+                    </button>
+                </nav>
+                
+                <div class="header-right">
+                    <div class="user-info" id="user-info" style="display: none;">
+                        <div class="user-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="user-details">
+                            <span class="user-name" id="user-name">User Name</span>
+                            <span class="user-city" id="user-city">City</span>
+                        </div>
+                        <div class="user-menu">
+                            <button class="user-menu-btn" id="user-menu-btn">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="user-dropdown" id="user-dropdown">
+                                <a href="#" id="view-profile">
+                                    <i class="fas fa-user"></i> View Profile
+                                </a>
+                                <a href="#" id="logout-btn">
+                                    <i class="fas fa-sign-out-alt"></i> Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                        <div class="toggle-track">
+                            <div class="toggle-thumb">
+                                <i class="fas fa-sun sun-icon"></i>
+                                <i class="fas fa-moon moon-icon"></i>
+                            </div>
+                        </div>
+                    </button>
+                    <img src="../assets/logo-6.jpeg" alt="App Logo" class="header-logo">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Map Section -->
+        <section id="map-section" class="section active">
+            <div class="map-container">
+                <div class="map-header">
+                    <h2>Live Infrastructure Issues Map</h2>
+                    <div class="map-location-info">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="map-city-display">Loading location...</span>
+                    </div>
+                    <div class="map-filters">
+                        <button class="filter-btn active" data-filter="all">All Issues</button>
+                        <button class="filter-btn" data-filter="pothole">Potholes</button>
+                        <button class="filter-btn" data-filter="water">Water Leaks</button>
+                        <button class="filter-btn" data-filter="traffic">Traffic Lights</button>
+                        <button class="filter-btn" data-filter="streetlight">Street Lights</button>
+                        <button class="filter-btn" data-filter="drainage">Drainage</button>
+                        <button class="filter-btn" data-filter="other">Other</button>
+                    </div>
+                </div>
+                <div class="map" id="map">
+                    <!-- Map will be rendered here -->
+                    <div class="map-placeholder">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <p>Interactive map with issue markers</p>
+                        <!-- Dynamic markers will be rendered here by JavaScript -->
+                        <div class="sample-markers" id="dynamic-markers">
+                            <!-- Markers will be dynamically generated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Legend -->
+            <div class="legend">
+                <h3>Legend</h3>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <span class="legend-color new"></span>
+                        <span>New (0-7 days)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color acknowledged"></span>
+                        <span>Acknowledged</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color resolved"></span>
+                        <span>Resolved</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Report Section -->
+        <section id="report-section" class="section">
+            <div class="report-container">
+                <h2>Report an Issue</h2>
+                <div class="report-form">
+                    <div class="location-info">
+                        <div class="location-display">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="current-location">Getting your location...</span>
+                        </div>
+                        <button class="btn-secondary" id="get-location">
+                            <i class="fas fa-crosshairs"></i> Update Location
+                        </button>
+                    </div>
+
+                    <div class="issue-types">
+                        <h3>Select Issue Type</h3>
+                        <div class="issue-grid">
+                            <button class="issue-type" data-type="pothole">
+                                <i class="fas fa-road"></i>
+                                <span>Pothole</span>
+                            </button>
+                            <button class="issue-type" data-type="water">
+                                <i class="fas fa-tint"></i>
+                                <span>Water Leak</span>
+                            </button>
+                            <button class="issue-type" data-type="traffic">
+                                <i class="fas fa-traffic-light"></i>
+                                <span>Traffic Light</span>
+                            </button>
+                            <button class="issue-type" data-type="streetlight">
+                                <i class="fas fa-lightbulb"></i>
+                                <span>Street Light</span>
+                            </button>
+                            <button class="issue-type" data-type="drainage">
+                                <i class="fas fa-drain"></i>
+                                <span>Drainage</span>
+                            </button>
+                            <button class="issue-type" data-type="other">
+                                <i class="fas fa-tools"></i>
+                                <span>Other</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="photo-section">
+                        <h3>Add Photo</h3>
+                        <div class="photo-upload">
+                            <input type="file" id="photo-input" accept="image/*" capture="environment">
+                            <label for="photo-input" class="photo-upload-btn">
+                                <i class="fas fa-camera"></i>
+                                <span>Take Photo</span>
+                            </label>
+                            <div class="photo-preview" id="photo-preview" style="display: none;">
+                                <img id="preview-image" alt="Preview">
+                                <button class="remove-photo" id="remove-photo">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="description-section">
+                        <h3>Description (Optional)</h3>
+                        <textarea id="description" placeholder="Provide additional details about the issue..."></textarea>
+                    </div>
+
+                    <button class="btn-primary submit-btn" id="submit-report">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Report
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section id="stats-section" class="section">
+            <div class="stats-container">
+                <h2>Community Impact Dashboard</h2>
+                <div class="stats-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="stats-city-display">Loading city data...</span>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>3</h3>
+                            <p>Total Reports</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon resolved">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>0</h3>
+                            <p>Resolved Issues</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>12</h3>
+                            <p>Days Average Fix Time</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>1,234</h3>
+                            <p>Active Users</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="top-issues">
+                    <h3>Most Reported Issues This Week</h3>
+                    <div class="issue-list">
+                        <!-- Dynamic content will be populated here by JavaScript -->
+                        <div class="issue-item">
+                            <div class="issue-details">
+                                <h4>Loading issues...</h4>
+                                <p>Please wait while we load the latest reports</p>
+                                <span class="issue-type-badge other">Loading</span>
+                            </div>
+                            <div class="issue-stats">
+                                <span class="upvotes">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                </span>
+                                <span class="status new">Loading</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="profile-section" class="section">
+            <div class="profile-container">
+                <h2>User Profile</h2>
+                
+                <div class="profile-content">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="profile-info">
+                            <h3 id="profile-name">Loading...</h3>
+                            <p id="profile-email">Loading...</p>
+                            <div class="profile-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span id="profile-city">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="stat-value" id="user-total-reports">0</div>
+                            <div class="stat-label">Reports Submitted</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="stat-value" id="user-upvotes-received">0</div>
+                            <div class="stat-label">Upvotes Received</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="stat-value" id="user-member-since">Loading...</div>
+                            <div class="stat-label">Member Since</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-reports">
+                        <h3>Your Recent Reports</h3>
+                        <div class="user-reports-list" id="user-reports-list">
+                            <div class="loading-message">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Loading your reports...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="btn-secondary" id="change-city-btn">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Change City
+                        </button>
+                        <button class="btn-danger" id="profile-logout-btn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Success Modal -->
+    <div class="modal" id="success-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-check-circle success-icon"></i>
+                <h2>Report Submitted!</h2>
+            </div>
+            <div class="modal-body">
+                <p>Thank you for making your community better. Your report has been submitted and will be reviewed by local authorities.</p>
+                <div class="report-id">
+                    <strong>Report ID: #<span id="report-id"></span></strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="close-modal">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- City Change Modal -->
+    <div class="modal" id="city-change-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-map-marker-alt"></i>
+                <h2>Change City</h2>
+            </div>
+            <div class="modal-body">
+                <p>Select your new city:</p>
+                <select id="new-city-select" class="city-select">
+                    <option value="">Select a city...</option>
+                    <option value="johannesburg">Johannesburg</option>
+                    <option value="cape-town">Cape Town</option>
+                    <option value="durban">Durban</option>
+                    <option value="pretoria">Pretoria</option>
+                    <option value="port-elizabeth">Port Elizabeth</option>
+                    <option value="bloemfontein">Bloemfontein</option>
+                    <option value="east-london">East London</option>
+                    <option value="pietermaritzburg">Pietermaritzburg</option>
+                    <option value="polokwane">Polokwane</option>
+                    <option value="kimberley">Kimberley</option>
+                    <option value="rustenburg">Rustenburg</option>
+                    <option value="nelspruit">Nelspruit</option>
+                    <option value="upington">Upington</option>
+                    <option value="mahikeng">Mahikeng</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-city-change">Cancel</button>
+                <button class="btn-primary" id="confirm-city-change">Update City</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p id="loading-message">Processing...</p>
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</body>
+</html>
