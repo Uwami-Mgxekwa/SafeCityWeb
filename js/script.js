@@ -1,11 +1,11 @@
-let supabase; 
+let supabase;
 
 // Function to initialize Supabase
 function initializeSupabase() {
     if (typeof window.supabase !== 'undefined') {
         const SUPABASE_URL = 'https://cifsceqaulhzhkvlgsla.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNpZnNjZXFhdWxoemhrdmxnc2xhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU5NDQxMzMsImV4cCI6MjA3MTUyMDEzM30.ywt4tUbKXMemF1FjJwKh4td46RqayaK4wJKYRfEw3RQ';
-        
+
         if (!supabase) {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             console.log('Supabase initialized successfully');
@@ -48,19 +48,32 @@ const cityCoordinates = {
 // Authentication check and initialization
 function checkAuthenticationAndInitialize() {
     console.log('Checking authentication status...');
-    
+
+    // Check for persistent session (remember me)
     const rememberedUser = localStorage.getItem('safecity-user');
     const userLocationData = localStorage.getItem('safecity-user-location');
-    
-    if (!rememberedUser) {
+
+    // Check for temporary session (current session only)
+    const tempUser = sessionStorage.getItem('safecity-temp-user');
+    const tempSession = sessionStorage.getItem('safecity-temp-session');
+
+    let userData = null;
+
+    if (rememberedUser) {
+        userData = rememberedUser;
+        console.log('Found persistent user session');
+    } else if (tempUser && tempSession) {
+        userData = tempUser;
+        console.log('Found temporary user session');
+    } else {
         console.log('No authenticated user found, redirecting to login...');
         window.location.href = 'auth.html';
         return false;
     }
-    
+
     try {
-        appState.user = JSON.parse(rememberedUser);
-        
+        appState.user = JSON.parse(userData);
+
         if (userLocationData) {
             appState.userLocation = JSON.parse(userLocationData);
         } else if (appState.user.city && cityCoordinates[appState.user.city]) {
@@ -70,19 +83,22 @@ function checkAuthenticationAndInitialize() {
                 displayName: cityCoordinates[appState.user.city].name
             };
         }
-        
+
         console.log('User authenticated:', appState.user.first_name, appState.user.last_name);
         console.log('User location:', appState.userLocation?.displayName || 'Unknown');
-        
+
         // Update UI with user info
         updateUserInterface();
-        
+
         return true;
-        
+
     } catch (error) {
         console.error('Error parsing user data:', error);
+        // Clear both persistent and temporary sessions
         localStorage.removeItem('safecity-user');
         localStorage.removeItem('safecity-user-location');
+        sessionStorage.removeItem('safecity-temp-user');
+        sessionStorage.removeItem('safecity-temp-session');
         window.location.href = 'auth.html';
         return false;
     }
@@ -93,22 +109,22 @@ function updateUserInterface() {
     const userInfo = document.getElementById('user-info');
     const userName = document.getElementById('user-name');
     const userCity = document.getElementById('user-city');
-    
+
     if (userInfo && appState.user) {
         userInfo.style.display = 'flex';
-        
+
         if (userName) {
             userName.textContent = `${appState.user.first_name} ${appState.user.last_name}`;
         }
-        
+
         if (userCity && appState.userLocation) {
             userCity.textContent = appState.userLocation.displayName;
         }
     }
-    
+
     // Update location displays throughout the app
     updateLocationDisplays();
-    
+
     // Update profile section
     updateProfileSection();
 }
@@ -118,17 +134,17 @@ function updateLocationDisplays() {
     const mapCityDisplay = document.getElementById('map-city-display');
     const statsCityDisplay = document.getElementById('stats-city-display');
     const currentLocationDisplay = document.getElementById('current-location');
-    
+
     const cityName = appState.userLocation?.displayName || 'Unknown City';
-    
+
     if (mapCityDisplay) {
         mapCityDisplay.textContent = cityName;
     }
-    
+
     if (statsCityDisplay) {
         statsCityDisplay.textContent = `Showing data for ${cityName}`;
     }
-    
+
     if (currentLocationDisplay) {
         currentLocationDisplay.textContent = `Current Location: ${cityName}`;
     }
@@ -137,48 +153,48 @@ function updateLocationDisplays() {
 // Update profile section
 function updateProfileSection() {
     if (!appState.user) return;
-    
+
     const profileName = document.getElementById('profile-name');
     const profileEmail = document.getElementById('profile-email');
     const profileCity = document.getElementById('profile-city');
     const userTotalReports = document.getElementById('user-total-reports');
     const userUpvotesReceived = document.getElementById('user-upvotes-received');
     const userMemberSince = document.getElementById('user-member-since');
-    
+
     if (profileName) {
         profileName.textContent = `${appState.user.first_name} ${appState.user.last_name}`;
     }
-    
+
     if (profileEmail) {
         profileEmail.textContent = appState.user.email;
     }
-    
+
     if (profileCity && appState.userLocation) {
         profileCity.textContent = appState.userLocation.displayName;
     }
-    
+
     // Calculate user stats
-    const userReports = appState.reports.filter(report => 
+    const userReports = appState.reports.filter(report =>
         report.user_id === appState.user.id || report.user_email === appState.user.email
     );
     const totalUpvotes = userReports.reduce((sum, report) => sum + (report.upvotes || 0), 0);
-    
+
     if (userTotalReports) {
         userTotalReports.textContent = userReports.length;
     }
-    
+
     if (userUpvotesReceived) {
         userUpvotesReceived.textContent = totalUpvotes;
     }
-    
+
     if (userMemberSince && appState.user.created_at) {
         const memberDate = new Date(appState.user.created_at);
-        userMemberSince.textContent = memberDate.toLocaleDateString('en-US', { 
-            month: 'long', 
-            year: 'numeric' 
+        userMemberSince.textContent = memberDate.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
         });
     }
-    
+
     // Update user reports list
     updateUserReportsList(userReports);
 }
@@ -187,7 +203,7 @@ function updateProfileSection() {
 function updateUserReportsList(userReports) {
     const userReportsList = document.getElementById('user-reports-list');
     if (!userReportsList) return;
-    
+
     if (userReports.length === 0) {
         userReportsList.innerHTML = `
             <div class="no-reports-message">
@@ -198,16 +214,16 @@ function updateUserReportsList(userReports) {
         `;
         return;
     }
-    
+
     userReportsList.innerHTML = '';
-    
+
     // Sort by date, most recent first
     const sortedReports = userReports.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
+
     sortedReports.slice(0, 5).forEach(report => {
         const reportItem = document.createElement('div');
         reportItem.className = 'user-report-item';
-        
+
         reportItem.innerHTML = `
             <div class="report-icon">
                 <i class="${getIssueTypeIcon(report.type)}"></i>
@@ -228,10 +244,10 @@ function updateUserReportsList(userReports) {
                 </div>
             </div>
         `;
-        
+
         userReportsList.appendChild(reportItem);
     });
-    
+
     if (sortedReports.length > 5) {
         const showMoreBtn = document.createElement('button');
         showMoreBtn.className = 'btn-secondary show-more-reports';
@@ -245,13 +261,13 @@ function updateUserReportsList(userReports) {
 function showAllUserReports(allReports) {
     const userReportsList = document.getElementById('user-reports-list');
     if (!userReportsList) return;
-    
+
     userReportsList.innerHTML = '';
-    
+
     allReports.forEach(report => {
         const reportItem = document.createElement('div');
         reportItem.className = 'user-report-item';
-        
+
         reportItem.innerHTML = `
             <div class="report-icon">
                 <i class="${getIssueTypeIcon(report.type)}"></i>
@@ -272,10 +288,10 @@ function showAllUserReports(allReports) {
                 </div>
             </div>
         `;
-        
+
         userReportsList.appendChild(reportItem);
     });
-    
+
     const showLessBtn = document.createElement('button');
     showLessBtn.className = 'btn-secondary show-less-reports';
     showLessBtn.innerHTML = `<i class="fas fa-minus"></i> Show Less`;
@@ -295,7 +311,7 @@ function generateMarkerPosition(reportId, index) {
     const randomOffsetY = ((seed * 7) % 20) - 10;
     const finalX = Math.max(5, Math.min(85, gridX + randomOffsetX));
     const finalY = Math.max(5, Math.min(85, gridY + randomOffsetY));
-    
+
     return { top: `${finalY}%`, left: `${finalX}%` };
 }
 
@@ -305,27 +321,27 @@ function createMarkerElement(report, index) {
     marker.className = `marker ${report.type}`;
     marker.setAttribute('data-issue', report.type);
     marker.setAttribute('data-report-id', report.id);
-    
+
     const position = generateMarkerPosition(report.id, index);
     marker.style.top = position.top;
     marker.style.left = position.left;
-    
+
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
         marker.style.width = '35px';
         marker.style.height = '35px';
         marker.style.fontSize = '14px';
     }
-    
+
     const icon = document.createElement('i');
     icon.className = getIssueTypeIcon(report.type);
     marker.appendChild(icon);
-    
+
     const markerInfo = createMobileOptimizedMarkerInfo(report);
     marker.appendChild(markerInfo);
-    
+
     addMobileInteractions(marker, report);
-    
+
     return marker;
 }
 
@@ -333,33 +349,33 @@ function createMarkerElement(report, index) {
 function createMobileOptimizedMarkerInfo(report) {
     const markerInfo = document.createElement('div');
     markerInfo.className = 'marker-info';
-    
+
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
         markerInfo.style.minWidth = '180px';
         markerInfo.style.fontSize = '12px';
         markerInfo.style.bottom = '45px';
     }
-    
+
     const title = document.createElement('h4');
     title.textContent = formatReportTitle(report);
     title.style.fontSize = isMobile ? '13px' : '14px';
     markerInfo.appendChild(title);
-    
+
     const timeAgo = document.createElement('p');
     timeAgo.textContent = formatDate(report.date);
     markerInfo.appendChild(timeAgo);
-    
+
     const upvotes = document.createElement('p');
     upvotes.innerHTML = `<i class="fas fa-arrow-up"></i> ${report.upvotes}`;
     markerInfo.appendChild(upvotes);
-    
+
     const status = document.createElement('p');
     status.textContent = report.status.charAt(0).toUpperCase() + report.status.slice(1);
     status.style.color = getStatusColor(report.status);
     status.style.fontWeight = 'bold';
     markerInfo.appendChild(status);
-    
+
     if (isMobile) {
         const tapHint = document.createElement('p');
         tapHint.textContent = 'Tap for details';
@@ -368,45 +384,45 @@ function createMobileOptimizedMarkerInfo(report) {
         tapHint.style.color = '#999';
         markerInfo.appendChild(tapHint);
     }
-    
+
     return markerInfo;
 }
 
 // Enhanced mobile interactions
 function addMobileInteractions(marker, report) {
     let touchStartTime = 0;
-    
-    marker.addEventListener('touchstart', function(e) {
+
+    marker.addEventListener('touchstart', function (e) {
         touchStartTime = Date.now();
         this.style.transform = 'scale(1.1)';
         this.style.zIndex = '100';
     });
-    
-    marker.addEventListener('touchend', function(e) {
+
+    marker.addEventListener('touchend', function (e) {
         e.preventDefault();
         const touchDuration = Date.now() - touchStartTime;
-        
+
         if (touchDuration < 300) {
             showMobileIssueDetails(report);
         }
-        
+
         this.style.transform = 'scale(1)';
         this.style.zIndex = '10';
     });
-    
-    marker.addEventListener('click', function(e) {
+
+    marker.addEventListener('click', function (e) {
         e.stopPropagation();
         showMobileIssueDetails(report);
     });
-    
-    marker.addEventListener('mouseenter', function() {
+
+    marker.addEventListener('mouseenter', function () {
         if (window.innerWidth > 768) {
             this.style.transform = 'scale(1.2)';
             this.style.zIndex = '100';
         }
     });
-    
-    marker.addEventListener('mouseleave', function() {
+
+    marker.addEventListener('mouseleave', function () {
         if (window.innerWidth > 768) {
             this.style.transform = 'scale(1)';
             this.style.zIndex = '10';
@@ -417,7 +433,7 @@ function addMobileInteractions(marker, report) {
 // Mobile-optimized issue details
 function showMobileIssueDetails(report) {
     const isMobile = window.innerWidth <= 768;
-    
+
     if (isMobile) {
         showMobileIssueModal(report);
     } else {
@@ -439,69 +455,69 @@ function showMobileIssueModal(report) {
     if (existingModal) {
         existingModal.remove();
     }
-    
+
     const modal = document.createElement('div');
     modal.id = 'mobile-issue-modal';
     modal.className = 'mobile-issue-modal';
-    
+
     const modalContent = document.createElement('div');
     modalContent.className = 'mobile-modal-content';
-    
+
     const modalHeader = document.createElement('div');
     modalHeader.className = 'mobile-modal-header';
-    
+
     const modalTitle = document.createElement('h3');
     modalTitle.className = 'mobile-modal-title';
     modalTitle.textContent = formatReportTitle(report);
-    
+
     const closeButton = document.createElement('button');
     closeButton.className = 'mobile-modal-close';
     closeButton.innerHTML = '<i class="fas fa-times"></i>';
     closeButton.onclick = () => hideMobileIssueModal();
-    
+
     modalHeader.appendChild(modalTitle);
     modalHeader.appendChild(closeButton);
-    
+
     const modalBody = document.createElement('div');
     modalBody.className = 'mobile-modal-body';
-    
+
     const locationSection = document.createElement('div');
     locationSection.className = 'mobile-modal-section';
     locationSection.innerHTML = `
         <h4>Location</h4>
         <p><i class="fas fa-map-marker-alt"></i> ${report.location.address}</p>
     `;
-    
+
     const descriptionSection = document.createElement('div');
     descriptionSection.className = 'mobile-modal-section';
     descriptionSection.innerHTML = `
         <h4>Description</h4>
         <p>${report.description}</p>
     `;
-    
+
     const statusSection = document.createElement('div');
     statusSection.className = 'mobile-modal-section';
     const statusBadge = document.createElement('span');
     statusBadge.className = `mobile-status-badge ${report.status}`;
     statusBadge.textContent = report.status.charAt(0).toUpperCase() + report.status.slice(1);
-    
+
     statusSection.innerHTML = '<h4>Status</h4>';
     statusSection.appendChild(statusBadge);
-    
+
     const timeSection = document.createElement('div');
     timeSection.className = 'mobile-modal-section';
     timeSection.innerHTML = `
         <h4>Reported</h4>
         <p><i class="fas fa-clock"></i> ${formatDate(report.date)}</p>
     `;
-    
+
     const upvoteSection = document.createElement('div');
     upvoteSection.className = 'mobile-upvote-section';
-    
+
     const upvoteCount = document.createElement('div');
     upvoteCount.className = 'mobile-upvote-count';
     upvoteCount.textContent = `${report.upvotes} upvotes`;
-    
+
     const upvoteButton = document.createElement('button');
     upvoteButton.className = 'mobile-upvote-btn';
     upvoteButton.innerHTML = '<i class="fas fa-arrow-up"></i> Upvote This Issue';
@@ -509,34 +525,34 @@ function showMobileIssueModal(report) {
         addUpvote(report.id);
         upvoteCount.textContent = `${report.upvotes} upvotes`;
     };
-    
+
     upvoteSection.appendChild(upvoteCount);
     upvoteSection.appendChild(upvoteButton);
-    
+
     const reportIdSection = document.createElement('div');
     reportIdSection.className = 'mobile-modal-section';
     reportIdSection.innerHTML = `
         <h4>Report ID</h4>
         <p>#${report.id}</p>
     `;
-    
+
     modalBody.appendChild(locationSection);
     modalBody.appendChild(descriptionSection);
     modalBody.appendChild(statusSection);
     modalBody.appendChild(timeSection);
     modalBody.appendChild(upvoteSection);
     modalBody.appendChild(reportIdSection);
-    
+
     modalContent.appendChild(modalHeader);
     modalContent.appendChild(modalBody);
     modal.appendChild(modalContent);
-    
+
     document.body.appendChild(modal);
-    
+
     setTimeout(() => {
         modal.classList.add('show');
     }, 10);
-    
+
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             hideMobileIssueModal();
@@ -560,26 +576,26 @@ async function handleReportSubmission() {
         alert('Please select an issue type');
         return;
     }
-    
+
     if (!appState.user) {
         alert('Please log in to submit reports');
         return;
     }
-    
+
     const location = getCurrentUserLocation();
     if (!location) {
         alert('Location is required. Please wait for location to be detected or update manually.');
         return;
     }
-    
+
     showLoading('Submitting your report...');
-    
+
     try {
         const newReport = {
             id: generateReportId(),
             type: appState.selectedIssueType,
             location: location,
-            description: document.getElementById('description').value || `${formatReportTitle({type: appState.selectedIssueType})} reported by ${appState.user.first_name}`,
+            description: document.getElementById('description').value || `${formatReportTitle({ type: appState.selectedIssueType })} reported by ${appState.user.first_name}`,
             photo: appState.uploadedPhoto,
             upvotes: 1,
             status: 'new',
@@ -589,18 +605,18 @@ async function handleReportSubmission() {
             user_name: `${appState.user.first_name} ${appState.user.last_name}`,
             user_city: appState.user.city
         };
-        
+
         await new Promise(resolve => setTimeout(resolve, 1500));
-        
+
         await saveReportWithBackup(newReport);
-        
+
         appState.reports.push(newReport);
-        
+
         resetReportForm();
-        
+
         hideLoading();
         showSuccessModal(newReport.id);
-        
+
         if (appState.currentSection === 'map') {
             renderMapMarkers();
         }
@@ -610,9 +626,9 @@ async function handleReportSubmission() {
         if (appState.currentSection === 'profile') {
             updateProfileSection();
         }
-        
+
         console.log('New report submitted by user:', appState.user.email, newReport);
-        
+
     } catch (error) {
         console.error('Error saving report:', error);
         hideLoading();
@@ -629,7 +645,7 @@ function getCurrentUserLocation() {
             address: generateLocationAddress()
         };
     }
-    
+
     // Fallback to browser geolocation if available
     if (appState.currentLocation) {
         return {
@@ -637,7 +653,7 @@ function getCurrentUserLocation() {
             address: generateLocationAddress()
         };
     }
-    
+
     return null;
 }
 
@@ -659,33 +675,33 @@ async function saveReportWithBackup(newReport) {
                 date: newReport.date.toISOString()
                 // Removed user fields that don't exist in your table
             };
-            
+
             const { data, error } = await supabase
                 .from('reports')
                 .insert([reportData]);
-                
+
             if (error) {
                 console.error('Supabase insert error:', error);
                 throw error;
             }
-            
+
             console.log('Report saved to Supabase:', data);
             return newReport;
         }
-        
+
         // Fallback to localStorage if Supabase not available
         const reportForStorage = {
             ...newReport,
             date: newReport.date.toISOString()
         };
-        
+
         const existingReports = JSON.parse(localStorage.getItem('safecity-reports') || '[]');
         existingReports.push(reportForStorage);
         localStorage.setItem('safecity-reports', JSON.stringify(existingReports));
-        
+
         console.log('Report saved to localStorage');
         return newReport;
-        
+
     } catch (error) {
         console.error('Error saving report:', error);
         throw error;
@@ -696,22 +712,22 @@ async function saveReportWithBackup(newReport) {
 function filterReportsByCity(reports, userCity) {
     const userCityData = cityCoordinates[userCity];
     if (!userCityData) return reports;
-    
+
     // Filter reports within a reasonable distance of the user's city
     const cityRadius = 0.5; // degrees (~55km)
-    
+
     return reports.filter(report => {
         // If report has user_city, use exact match
         if (report.user_city) {
             return report.user_city === userCity;
         }
-        
+
         // Otherwise, use geographic proximity
         const distance = Math.sqrt(
             Math.pow(report.location.lat - userCityData.lat, 2) +
             Math.pow(report.location.lng - userCityData.lng, 2)
         );
-        
+
         return distance <= cityRadius;
     });
 }
@@ -720,20 +736,20 @@ function filterReportsByCity(reports, userCity) {
 async function loadFromSupabase() {
     try {
         if (!supabase) return [];
-        
+
         // Remove city filtering to load all reports
         const { data, error } = await supabase
             .from('reports')
             .select('*')
             .order('date', { ascending: false }); // Order by newest first
-            
+
         if (error) {
             console.error('Error loading data from Supabase:', error);
             return [];
         }
-        
+
         console.log('Raw Supabase data:', data); // Debug log
-        
+
         const processedReports = data.map(item => ({
             id: item.id,
             type: item.type,
@@ -752,10 +768,10 @@ async function loadFromSupabase() {
             user_name: item.user_name,
             user_city: item.user_city
         }));
-        
+
         console.log(`Loaded ${processedReports.length} total reports from Supabase`);
         return processedReports;
-        
+
     } catch (error) {
         console.error('Error loading from Supabase:', error);
         return [];
@@ -768,15 +784,15 @@ function loadSampleData() {
     console.log('Loading sample data...');
     const sampleLocation = appState.userLocation?.coordinates || { lat: -26.2041, lng: 28.0473 };
     const cityName = appState.userLocation?.displayName || 'Johannesburg';
-    
+
     return [
         {
             id: 1001,
             type: 'pothole',
-            location: { 
-                lat: sampleLocation.lat + 0.01, 
-                lng: sampleLocation.lng + 0.01, 
-                address: `Main Road, ${cityName}` 
+            location: {
+                lat: sampleLocation.lat + 0.01,
+                lng: sampleLocation.lng + 0.01,
+                address: `Main Road, ${cityName}`
             },
             description: 'Large pothole causing traffic issues',
             photo: null,
@@ -788,10 +804,10 @@ function loadSampleData() {
         {
             id: 1002,
             type: 'water',
-            location: { 
-                lat: sampleLocation.lat - 0.01, 
-                lng: sampleLocation.lng + 0.02, 
-                address: `Intersection, ${cityName}` 
+            location: {
+                lat: sampleLocation.lat - 0.01,
+                lng: sampleLocation.lng + 0.02,
+                address: `Intersection, ${cityName}`
             },
             description: 'Water leak at major intersection',
             photo: null,
@@ -803,10 +819,10 @@ function loadSampleData() {
         {
             id: 1003,
             type: 'traffic',
-            location: { 
-                lat: sampleLocation.lat + 0.005, 
-                lng: sampleLocation.lng - 0.01, 
-                address: `Traffic Light, ${cityName}` 
+            location: {
+                lat: sampleLocation.lat + 0.005,
+                lng: sampleLocation.lng - 0.01,
+                address: `Traffic Light, ${cityName}`
             },
             description: 'Traffic light not working properly',
             photo: null,
@@ -819,12 +835,12 @@ function loadSampleData() {
 }
 
 // Initialize app when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Check authentication first
     if (!checkAuthenticationAndInitialize()) {
         return; // Exit if not authenticated
     }
-    
+
     initializeApp();
     themeManager.init();
 });
@@ -832,9 +848,9 @@ document.addEventListener('DOMContentLoaded', function() {
 // Single app initialization function
 async function initializeApp() {
     console.log('Initializing SafeCity app...');
-    
+
     const supabaseInitialized = initializeSupabase();
-    
+
     try {
         if (supabaseInitialized) {
             // Load data exclusively from Supabase
@@ -857,17 +873,17 @@ async function initializeApp() {
         console.log('No reports found in Supabase. Loading sample data.');
         appState.reports = loadSampleData();
     }
-    
+
     setupNavigationListeners();
     setupReportFormListeners();
     setupMapListeners();
     setupModalListeners();
     setupUserMenuListeners();
-    
+
     getCurrentLocation();
-    
+
     showSection('map');
-    
+
     console.log('SafeCity app initialized successfully with', appState.reports.length, 'reports');
 }
 
@@ -879,50 +895,50 @@ function setupUserMenuListeners() {
     const logoutBtn = document.getElementById('logout-btn');
     const profileLogoutBtn = document.getElementById('profile-logout-btn');
     const changeCityBtn = document.getElementById('change-city-btn');
-    
+
     // Toggle user dropdown
     if (userMenuBtn && userDropdown) {
-        userMenuBtn.addEventListener('click', function(e) {
+        userMenuBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             userDropdown.classList.toggle('show');
         });
-        
+
         // Close dropdown when clicking outside
-        document.addEventListener('click', function() {
+        document.addEventListener('click', function () {
             userDropdown.classList.remove('show');
         });
     }
-    
+
     // View profile
     if (viewProfileBtn) {
-        viewProfileBtn.addEventListener('click', function(e) {
+        viewProfileBtn.addEventListener('click', function (e) {
             e.preventDefault();
             showSection('profile');
-            
+
             // Update nav buttons
             const navButtons = document.querySelectorAll('.nav-btn');
             navButtons.forEach(btn => btn.classList.remove('active'));
             const profileBtn = document.querySelector('[data-section="profile"]');
             if (profileBtn) profileBtn.classList.add('active');
-            
+
             userDropdown.classList.remove('show');
         });
     }
-    
+
     // Logout buttons
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
     }
-    
+
     if (profileLogoutBtn) {
         profileLogoutBtn.addEventListener('click', handleLogout);
     }
-    
+
     // Change city button
     if (changeCityBtn) {
         changeCityBtn.addEventListener('click', showCityChangeModal);
     }
-    
+
     // City change modal listeners
     setupCityChangeModal();
 }
@@ -930,16 +946,18 @@ function setupUserMenuListeners() {
 // Handle user logout
 function handleLogout(e) {
     e.preventDefault();
-    
+
     if (confirm('Are you sure you want to logout?')) {
-        // Clear stored session
+        // Clear both persistent and temporary sessions
         localStorage.removeItem('safecity-user');
         localStorage.removeItem('safecity-session');
         localStorage.removeItem('safecity-user-city');
         localStorage.removeItem('safecity-user-location');
-        
+        sessionStorage.removeItem('safecity-temp-user');
+        sessionStorage.removeItem('safecity-temp-session');
+
         console.log('User logged out');
-        
+
         // Redirect to login page
         window.location.href = 'auth.html';
     }
@@ -949,13 +967,13 @@ function handleLogout(e) {
 function showCityChangeModal() {
     const modal = document.getElementById('city-change-modal');
     const select = document.getElementById('new-city-select');
-    
+
     if (modal && select) {
         // Set current city as selected
         if (appState.user && appState.user.city) {
             select.value = appState.user.city;
         }
-        
+
         modal.style.display = 'flex';
     }
 }
@@ -966,33 +984,33 @@ function setupCityChangeModal() {
     const cancelBtn = document.getElementById('cancel-city-change');
     const confirmBtn = document.getElementById('confirm-city-change');
     const selectElement = document.getElementById('new-city-select');
-    
+
     if (cancelBtn) {
-        cancelBtn.addEventListener('click', function() {
+        cancelBtn.addEventListener('click', function () {
             modal.style.display = 'none';
         });
     }
-    
+
     if (confirmBtn && selectElement) {
-        confirmBtn.addEventListener('click', async function() {
+        confirmBtn.addEventListener('click', async function () {
             const newCity = selectElement.value;
-            
+
             if (!newCity) {
                 alert('Please select a city');
                 return;
             }
-            
+
             if (newCity === appState.user.city) {
                 modal.style.display = 'none';
                 return;
             }
-            
+
             showLoading('Updating your city...');
-            
+
             try {
                 // Update user data
                 await updateUserCity(newCity);
-                
+
                 // Update app state
                 appState.user.city = newCity;
                 appState.userLocation = {
@@ -1000,29 +1018,29 @@ function setupCityChangeModal() {
                     coordinates: cityCoordinates[newCity],
                     displayName: cityCoordinates[newCity].name
                 };
-                
+
                 // Update stored session
                 localStorage.setItem('safecity-user', JSON.stringify(appState.user));
                 localStorage.setItem('safecity-user-location', JSON.stringify(appState.userLocation));
-                
+
                 // Reload data for new city
                 await loadDataWithBackup();
-                
+
                 // Update UI
                 updateUserInterface();
-                
+
                 if (appState.currentSection === 'map') {
                     renderMapMarkers();
                 }
                 if (appState.currentSection === 'stats') {
                     updateStatsView();
                 }
-                
+
                 hideLoading();
                 modal.style.display = 'none';
-                
+
                 alert(`City updated to ${cityCoordinates[newCity].name}!`);
-                
+
             } catch (error) {
                 console.error('Error updating city:', error);
                 hideLoading();
@@ -1030,10 +1048,10 @@ function setupCityChangeModal() {
             }
         });
     }
-    
+
     // Close modal when clicking outside
     if (modal) {
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function (e) {
             if (e.target === modal) {
                 modal.style.display = 'none';
             }
@@ -1047,17 +1065,17 @@ async function updateUserCity(newCity) {
         if (supabase && appState.user) {
             const { error } = await supabase
                 .from('users')
-                .update({ 
+                .update({
                     city: newCity,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', appState.user.id);
-            
+
             if (error) {
                 console.error('Error updating user city in Supabase:', error);
                 throw error;
             }
-            
+
             console.log('User city updated in Supabase');
         }
     } catch (error) {
@@ -1069,12 +1087,12 @@ async function updateUserCity(newCity) {
 // Navigation Functions
 function setupNavigationListeners() {
     const navButtons = document.querySelectorAll('.nav-btn');
-    
+
     navButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             const section = this.getAttribute('data-section');
             showSection(section);
-            
+
             navButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
         });
@@ -1084,12 +1102,12 @@ function setupNavigationListeners() {
 function showSection(sectionName) {
     const sections = document.querySelectorAll('.section');
     sections.forEach(section => section.classList.remove('active'));
-    
+
     const targetSection = document.getElementById(`${sectionName}-section`);
     if (targetSection) {
         targetSection.classList.add('active');
         appState.currentSection = sectionName;
-        
+
         if (sectionName === 'map') {
             renderMapMarkers();
         } else if (sectionName === 'stats') {
@@ -1103,32 +1121,32 @@ function showSection(sectionName) {
 // Location Functions
 function getCurrentLocation() {
     const locationDisplay = document.getElementById('current-location');
-    
+
     if (navigator.geolocation) {
         if (locationDisplay) {
             locationDisplay.textContent = 'Getting your location...';
         }
-        
+
         navigator.geolocation.getCurrentPosition(
-            function(position) {
+            function (position) {
                 appState.currentLocation = {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 };
-                
+
                 const cityName = appState.userLocation?.displayName || 'your location';
                 if (locationDisplay) {
                     locationDisplay.textContent = `Current Location: ${cityName}`;
                 }
             },
-            function(error) {
+            function (error) {
                 console.error('Error getting location:', error);
                 const cityName = appState.userLocation?.displayName || 'Johannesburg';
-                
+
                 if (locationDisplay) {
                     locationDisplay.textContent = `Location: ${cityName}`;
                 }
-                
+
                 // Use user's city coordinates as fallback
                 if (appState.userLocation?.coordinates) {
                     appState.currentLocation = {
@@ -1153,7 +1171,7 @@ function getCurrentLocation() {
         if (locationDisplay) {
             locationDisplay.textContent = `Location: ${cityName}`;
         }
-        
+
         if (appState.userLocation?.coordinates) {
             appState.currentLocation = {
                 lat: appState.userLocation.coordinates.lat,
@@ -1174,27 +1192,27 @@ function setupReportFormListeners() {
     if (getLocationBtn) {
         getLocationBtn.addEventListener('click', getCurrentLocation);
     }
-    
+
     const issueTypes = document.querySelectorAll('.issue-type');
     issueTypes.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             issueTypes.forEach(btn => btn.classList.remove('selected'));
             this.classList.add('selected');
             appState.selectedIssueType = this.getAttribute('data-type');
         });
     });
-    
+
     const photoInput = document.getElementById('photo-input');
     const photoPreview = document.getElementById('photo-preview');
     const previewImage = document.getElementById('preview-image');
     const removePhotoBtn = document.getElementById('remove-photo');
-    
+
     if (photoInput) {
-        photoInput.addEventListener('change', function(e) {
+        photoInput.addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     previewImage.src = e.target.result;
                     photoPreview.style.display = 'block';
                     appState.uploadedPhoto = e.target.result;
@@ -1203,15 +1221,15 @@ function setupReportFormListeners() {
             }
         });
     }
-    
+
     if (removePhotoBtn) {
-        removePhotoBtn.addEventListener('click', function() {
+        removePhotoBtn.addEventListener('click', function () {
             photoPreview.style.display = 'none';
             photoInput.value = '';
             appState.uploadedPhoto = null;
         });
     }
-    
+
     const submitBtn = document.getElementById('submit-report');
     if (submitBtn) {
         submitBtn.addEventListener('click', handleReportSubmission);
@@ -1220,17 +1238,17 @@ function setupReportFormListeners() {
 
 function generateLocationAddress() {
     const cityName = appState.userLocation?.displayName || 'Johannesburg';
-    
+
     const areas = {
         'Johannesburg': ['Sandton', 'Rosebank', 'Melville', 'Braamfontein', 'Parktown'],
         'Cape Town': ['CBD', 'Camps Bay', 'Clifton', 'Green Point', 'Sea Point'],
         'Durban': ['CBD', 'Umhlanga', 'Glenwood', 'Morningside', 'Berea'],
         'Pretoria': ['CBD', 'Hatfield', 'Brooklyn', 'Menlyn', 'Centurion']
     };
-    
+
     const cityAreas = areas[cityName] || areas['Johannesburg'];
     const randomArea = cityAreas[Math.floor(Math.random() * cityAreas.length)];
-    
+
     return `Current Location, ${randomArea}, ${cityName}`;
 }
 
@@ -1238,13 +1256,13 @@ function resetReportForm() {
     const issueTypes = document.querySelectorAll('.issue-type');
     issueTypes.forEach(btn => btn.classList.remove('selected'));
     appState.selectedIssueType = null;
-    
+
     const photoPreview = document.getElementById('photo-preview');
     const photoInput = document.getElementById('photo-input');
     if (photoPreview) photoPreview.style.display = 'none';
     if (photoInput) photoInput.value = '';
     appState.uploadedPhoto = null;
-    
+
     const descriptionField = document.getElementById('description');
     if (descriptionField) descriptionField.value = '';
 }
@@ -1253,18 +1271,18 @@ function resetReportForm() {
 function renderMapMarkers() {
     const markersContainer = document.querySelector('.sample-markers');
     if (!markersContainer) return;
-    
+
     markersContainer.innerHTML = '';
-    
+
     const filteredReports = getFilteredReports();
-    
+
     filteredReports.sort((a, b) => b.upvotes - a.upvotes);
-    
+
     filteredReports.forEach((report, index) => {
         const marker = createMarkerElement(report, index);
         markersContainer.appendChild(marker);
     });
-    
+
     console.log(`Rendered ${filteredReports.length} markers for filter: ${appState.currentFilter}`);
 }
 
@@ -1272,10 +1290,10 @@ function renderMapMarkers() {
 function setupMapListeners() {
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function () {
             filterButtons.forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
-            
+
             appState.currentFilter = this.getAttribute('data-filter');
             renderMapMarkers();
         });
@@ -1298,37 +1316,37 @@ function formatReportTitle(report) {
         drainage: 'Drainage Problem',
         other: 'Other Issue'
     };
-    
+
     return typeNames[report.type] || 'Infrastructure Issue';
 }
 
 // Stats Functions
 function updateStatsView() {
     const stats = calculateStats();
-    
+
     const statCards = document.querySelectorAll('.stat-card');
     if (statCards.length >= 4) {
         const totalReportsCard = statCards[0].querySelector('.stat-info h3');
         if (totalReportsCard) {
             totalReportsCard.textContent = stats.totalReports;
         }
-        
+
         const resolvedCard = statCards[1].querySelector('.stat-info h3');
         if (resolvedCard) {
             resolvedCard.textContent = stats.resolvedReports;
         }
-        
+
         const avgTimeCard = statCards[2].querySelector('.stat-info h3');
         if (avgTimeCard) {
             avgTimeCard.textContent = stats.averageFixTime;
         }
-        
+
         const activeUsersCard = statCards[3].querySelector('.stat-info h3');
         if (activeUsersCard) {
             activeUsersCard.textContent = stats.activeUsers;
         }
     }
-    
+
     updateTopIssuesList();
     console.log('Updated stats:', stats);
 }
@@ -1336,13 +1354,13 @@ function updateStatsView() {
 function updateTopIssuesList() {
     const issueList = document.querySelector('.issue-list');
     if (!issueList) return;
-    
+
     const topReports = appState.reports
         .sort((a, b) => b.upvotes - a.upvotes)
         .slice(0, 3);
-    
+
     issueList.innerHTML = '';
-    
+
     if (topReports.length === 0) {
         issueList.innerHTML = `
             <div class="no-issues-message">
@@ -1353,7 +1371,7 @@ function updateTopIssuesList() {
         `;
         return;
     }
-    
+
     topReports.forEach(report => {
         const issueItem = createIssueListItem(report);
         issueList.appendChild(issueItem);
@@ -1363,7 +1381,7 @@ function updateTopIssuesList() {
 function createIssueListItem(report) {
     const issueItem = document.createElement('div');
     issueItem.className = 'issue-item';
-    
+
     issueItem.innerHTML = `
         <div class="issue-details">
             <h4>${formatReportTitle(report)}</h4>
@@ -1377,7 +1395,7 @@ function createIssueListItem(report) {
             <span class="status ${report.status}">${report.status.charAt(0).toUpperCase() + report.status.slice(1)}</span>
         </div>
     `;
-    
+
     return issueItem;
 }
 
@@ -1386,7 +1404,7 @@ function calculateStats() {
     const resolvedReports = appState.reports.filter(r => r.status === 'resolved').length;
     const averageFixTime = 12;
     const activeUsers = Math.max(1234 + (totalReports * 5), 1234);
-    
+
     return {
         totalReports,
         resolvedReports,
@@ -1398,9 +1416,9 @@ function calculateStats() {
 // Generate CSV content
 function generateCSVContent(reports) {
     const headers = ['id', 'type', 'lat', 'lng', 'address', 'description', 'upvotes', 'status', 'date', 'photo', 'user_id', 'user_email', 'user_name', 'user_city'];
-    
+
     const csvRows = [headers.join(',')];
-    
+
     reports.forEach(report => {
         let dateValue;
         if (report.date instanceof Date) {
@@ -1410,7 +1428,7 @@ function generateCSVContent(reports) {
         } else {
             dateValue = new Date().toISOString();
         }
-        
+
         const row = [
             report.id,
             report.type,
@@ -1429,7 +1447,7 @@ function generateCSVContent(reports) {
         ];
         csvRows.push(row.join(','));
     });
-    
+
     return csvRows.join('\n');
 }
 
@@ -1439,10 +1457,10 @@ function setupModalListeners() {
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', hideSuccessModal);
     }
-    
+
     const modal = document.getElementById('success-modal');
     if (modal) {
-        modal.addEventListener('click', function(e) {
+        modal.addEventListener('click', function (e) {
             if (e.target === modal) {
                 hideSuccessModal();
             }
@@ -1453,7 +1471,7 @@ function setupModalListeners() {
 function showSuccessModal(reportId) {
     const modal = document.getElementById('success-modal');
     const reportIdElement = document.getElementById('report-id');
-    
+
     if (modal && reportIdElement) {
         reportIdElement.textContent = reportId;
         modal.classList.add('show');
@@ -1473,11 +1491,11 @@ function hideSuccessModal() {
 function showLoading(message = 'Processing...') {
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingMessage = document.getElementById('loading-message');
-    
+
     if (loadingMessage) {
         loadingMessage.textContent = message;
     }
-    
+
     if (loadingOverlay) {
         loadingOverlay.style.display = 'flex';
     }
@@ -1493,25 +1511,25 @@ function hideLoading() {
 // Theme Management
 const themeManager = {
     currentTheme: 'light',
-    
+
     init() {
         const savedTheme = localStorage.getItem('safecity-theme') || 'light';
         this.setTheme(savedTheme);
         this.setupThemeToggle();
     },
-    
+
     setTheme(theme) {
         this.currentTheme = theme;
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('safecity-theme', theme);
         this.updateThemeElements();
     },
-    
+
     toggleTheme() {
         const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
         this.setTheme(newTheme);
     },
-    
+
     setupThemeToggle() {
         const themeToggle = document.getElementById('theme-toggle');
         if (themeToggle) {
@@ -1520,7 +1538,7 @@ const themeManager = {
             });
         }
     },
-    
+
     updateThemeElements() {
         if (this.currentTheme === 'dark') {
             this.applyDarkModeSpecificStyles();
@@ -1528,14 +1546,14 @@ const themeManager = {
             this.applyLightModeSpecificStyles();
         }
     },
-    
+
     applyDarkModeSpecificStyles() {
         const mapPlaceholder = document.querySelector('.map-placeholder');
         if (mapPlaceholder) {
             mapPlaceholder.style.background = 'linear-gradient(45deg, #3a3a3a, #2d2d2d)';
         }
     },
-    
+
     applyLightModeSpecificStyles() {
         const mapPlaceholder = document.querySelector('.map-placeholder');
         if (mapPlaceholder) {
@@ -1549,17 +1567,17 @@ function addUpvote(reportId) {
     const report = appState.reports.find(r => r.id === reportId);
     if (report) {
         report.upvotes += 1;
-        
+
         // Update in database if available
         updateReportUpvotes(reportId, report.upvotes);
-        
+
         if (appState.currentSection === 'map') {
             renderMapMarkers();
         }
         if (appState.currentSection === 'stats') {
             updateStatsView();
         }
-        
+
         console.log(`Upvoted report ${reportId}, new total: ${report.upvotes}`);
     }
 }
@@ -1572,12 +1590,12 @@ async function updateReportUpvotes(reportId, newUpvoteCount) {
                 .from('reports')
                 .update({ upvotes: newUpvoteCount })
                 .eq('id', reportId);
-            
+
             if (error) {
                 console.error('Error updating upvotes in Supabase:', error);
             }
         }
-        
+
         // Also update localStorage
         const localReports = JSON.parse(localStorage.getItem('safecity-reports') || '[]');
         const reportIndex = localReports.findIndex(r => r.id === reportId);
@@ -1585,7 +1603,7 @@ async function updateReportUpvotes(reportId, newUpvoteCount) {
             localReports[reportIndex].upvotes = newUpvoteCount;
             localStorage.setItem('safecity-reports', JSON.stringify(localReports));
         }
-        
+
     } catch (error) {
         console.error('Error updating upvotes:', error);
     }
@@ -1593,7 +1611,7 @@ async function updateReportUpvotes(reportId, newUpvoteCount) {
 
 // Search and filter functionality
 function searchReports(query) {
-    return appState.reports.filter(report => 
+    return appState.reports.filter(report =>
         report.description.toLowerCase().includes(query.toLowerCase()) ||
         report.location.address.toLowerCase().includes(query.toLowerCase())
     );
@@ -1604,7 +1622,7 @@ function downloadReportsAsCSV() {
     const csvContent = generateCSVContent(appState.reports);
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
-    
+
     const a = document.createElement('a');
     a.href = url;
     a.download = `safecity-reports-${appState.userLocation?.city || 'all'}-${new Date().toISOString().split('T')[0]}.csv`;
@@ -1617,7 +1635,7 @@ function downloadReportsAsCSV() {
 // Export functions for integration
 window.SafeCityApp = {
     state: appState,
-    addReport: function(reportData) {
+    addReport: function (reportData) {
         const newReport = {
             id: generateReportId(),
             ...reportData,
@@ -1629,23 +1647,23 @@ window.SafeCityApp = {
             user_name: appState.user ? `${appState.user.first_name} ${appState.user.last_name}` : null,
             user_city: appState.user?.city
         };
-        
+
         appState.reports.push(newReport);
-        
+
         if (appState.currentSection === 'map') {
             renderMapMarkers();
         }
-        
+
         return newReport;
     },
-    getReports: function() {
+    getReports: function () {
         return appState.reports;
     },
-    updateReport: function(reportId, updates) {
+    updateReport: function (reportId, updates) {
         const report = appState.reports.find(r => r.id === reportId);
         if (report) {
             Object.assign(report, updates);
-            
+
             if (appState.currentSection === 'map') {
                 renderMapMarkers();
             }
@@ -1660,19 +1678,19 @@ window.SafeCityApp = {
     renderMarkers: renderMapMarkers,
     addUpvote: addUpvote,
     downloadCSV: downloadReportsAsCSV,
-    getCurrentUser: function() {
+    getCurrentUser: function () {
         return appState.user;
     },
-    getUserLocation: function() {
+    getUserLocation: function () {
         return appState.userLocation;
     },
     logout: handleLogout
 };
 
 // Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if (e.ctrlKey || e.metaKey) {
-        switch(e.key) {
+        switch (e.key) {
             case '1':
                 e.preventDefault();
                 showSection('map');
@@ -1695,26 +1713,26 @@ document.addEventListener('keydown', function(e) {
                 break;
         }
     }
-    
+
     if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 't') {
         e.preventDefault();
         themeManager.toggleTheme();
     }
-    
+
     if (e.key === 'Escape') {
         hideMobileIssueModal();
-        
+
         // Close any open modals
         const cityModal = document.getElementById('city-change-modal');
         if (cityModal && cityModal.style.display === 'flex') {
             cityModal.style.display = 'none';
         }
-        
+
         const successModal = document.getElementById('success-modal');
         if (successModal && successModal.classList.contains('show')) {
             hideSuccessModal();
         }
-        
+
         // Close user dropdown
         const userDropdown = document.getElementById('user-dropdown');
         if (userDropdown && userDropdown.classList.contains('show')) {
@@ -1724,7 +1742,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Window resize handler
-window.addEventListener('resize', function() {
+window.addEventListener('resize', function () {
     if (appState.currentSection === 'map') {
         setTimeout(() => {
             renderMapMarkers();
@@ -1733,7 +1751,7 @@ window.addEventListener('resize', function() {
 });
 
 // Online/offline status handling
-window.addEventListener('online', function() {
+window.addEventListener('online', function () {
     console.log('Connection restored');
     // Attempt to sync any pending data when back online
     if (supabase && appState.reports.length > 0) {
@@ -1742,16 +1760,16 @@ window.addEventListener('online', function() {
     }
 });
 
-window.addEventListener('offline', function() {
+window.addEventListener('offline', function () {
     console.log('Connection lost - working in offline mode');
 });
 
 // Beforeunload handler to save any unsaved data
-window.addEventListener('beforeunload', function(e) {
+window.addEventListener('beforeunload', function (e) {
     // Save any unsaved form data
     const description = document.getElementById('description');
     const selectedIssueType = appState.selectedIssueType;
-    
+
     if (description && description.value.trim() && selectedIssueType) {
         const unsavedData = {
             description: description.value,
@@ -1770,20 +1788,20 @@ function loadUnsavedReport() {
         if (unsavedData) {
             const data = JSON.parse(unsavedData);
             const timeDiff = new Date().getTime() - data.timestamp;
-            
+
             // Only restore if less than 1 hour old
             if (timeDiff < 60 * 60 * 1000) {
                 const description = document.getElementById('description');
                 if (description) {
                     description.value = data.description;
                 }
-                
+
                 appState.selectedIssueType = data.issueType;
                 const issueTypeBtn = document.querySelector(`[data-type="${data.issueType}"]`);
                 if (issueTypeBtn) {
                     issueTypeBtn.classList.add('selected');
                 }
-                
+
                 if (data.photo) {
                     appState.uploadedPhoto = data.photo;
                     const previewImage = document.getElementById('preview-image');
@@ -1793,10 +1811,10 @@ function loadUnsavedReport() {
                         photoPreview.style.display = 'block';
                     }
                 }
-                
+
                 console.log('Restored unsaved report data');
             }
-            
+
             localStorage.removeItem('safecity-unsaved-report');
         }
     } catch (error) {
@@ -1813,7 +1831,7 @@ function formatDate(date) {
     const now = new Date();
     const diff = now - date;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days === 0) {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         if (hours === 0) {
@@ -1879,9 +1897,9 @@ function logPerformance(label) {
 }
 
 // Error handling
-window.addEventListener('error', function(e) {
+window.addEventListener('error', function (e) {
     console.error('SafeCity App Error:', e.error);
-    
+
     // You could implement error reporting here
     if (e.error && e.error.message) {
         console.error('Error details:', {
@@ -1894,7 +1912,7 @@ window.addEventListener('error', function(e) {
     }
 });
 
-window.addEventListener('unhandledrejection', function(e) {
+window.addEventListener('unhandledrejection', function (e) {
     console.error('Unhandled Promise Rejection:', e.reason);
     e.preventDefault(); // Prevent the default browser behavior
 });
@@ -1910,7 +1928,7 @@ function checkForUpdates() {
     if (lastVersion && lastVersion !== APP_VERSION) {
         console.log(`App updated from ${lastVersion} to ${APP_VERSION}`);
         // You could show an update notification here
-        
+
         // Clear old cache if needed
         if (lastVersion < '1.2.0') {
             console.log('Clearing old cache data');
