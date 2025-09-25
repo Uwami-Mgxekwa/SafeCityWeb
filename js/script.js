@@ -151,7 +151,7 @@ function updateLocationDisplays() {
 }
 
 // Update profile section
-function updateProfileSection() {
+async function updateProfileSection() {
     if (!appState.user) return;
 
     const profileName = document.getElementById('profile-name');
@@ -161,6 +161,7 @@ function updateProfileSection() {
     const userUpvotesReceived = document.getElementById('user-upvotes-received');
     const userMemberSince = document.getElementById('user-member-since');
 
+    // Update basic profile info
     if (profileName) {
         profileName.textContent = `${appState.user.first_name} ${appState.user.last_name}`;
     }
@@ -173,30 +174,69 @@ function updateProfileSection() {
         profileCity.textContent = appState.userLocation.displayName;
     }
 
-    // Calculate user stats
-    const userReports = appState.reports.filter(report =>
-        report.user_id === appState.user.id || report.user_email === appState.user.email
-    );
-    const totalUpvotes = userReports.reduce((sum, report) => sum + (report.upvotes || 0), 0);
-
+    // Show loading state
     if (userTotalReports) {
-        userTotalReports.textContent = userReports.length;
+        userTotalReports.textContent = '...';
     }
-
     if (userUpvotesReceived) {
-        userUpvotesReceived.textContent = totalUpvotes;
+        userUpvotesReceived.textContent = '...';
     }
 
-    if (userMemberSince && appState.user.created_at) {
-        const memberDate = new Date(appState.user.created_at);
-        userMemberSince.textContent = memberDate.toLocaleDateString('en-US', {
-            month: 'long',
-            year: 'numeric'
-        });
-    }
+    try {
+        // Fetch user statistics from Supabase
+        const userStats = await fetchUserStatistics();
 
-    // Update user reports list
-    updateUserReportsList(userReports);
+        // Update stats with real data
+        if (userTotalReports) {
+            userTotalReports.textContent = userStats.totalReports;
+        }
+
+        if (userUpvotesReceived) {
+            userUpvotesReceived.textContent = userStats.totalUpvotes;
+        }
+
+        if (userMemberSince) {
+            if (userStats.memberSince) {
+                const memberDate = new Date(userStats.memberSince);
+                userMemberSince.textContent = memberDate.toLocaleDateString('en-US', {
+                    month: 'long',
+                    year: 'numeric'
+                });
+            } else {
+                userMemberSince.textContent = 'Recently';
+            }
+        }
+
+        // Update user reports list with real data
+        updateUserReportsList(userStats.userReports);
+
+    } catch (error) {
+        console.error('Error fetching user statistics:', error);
+
+        // Fallback to local data if Supabase fails
+        const userReports = appState.reports.filter(report =>
+            report.user_id === appState.user.id || report.user_email === appState.user.email
+        );
+        const totalUpvotes = userReports.reduce((sum, report) => sum + (report.upvotes || 0), 0);
+
+        if (userTotalReports) {
+            userTotalReports.textContent = userReports.length;
+        }
+
+        if (userUpvotesReceived) {
+            userUpvotesReceived.textContent = totalUpvotes;
+        }
+
+        if (userMemberSince && appState.user.created_at) {
+            const memberDate = new Date(appState.user.created_at);
+            userMemberSince.textContent = memberDate.toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+
+        updateUserReportsList(userReports);
+    }
 }
 
 // Update user reports list in profile
@@ -657,11 +697,11 @@ function getCurrentUserLocation() {
     return null;
 }
 
-// Replace your saveReportWithBackup function with this version:
+// Save report with user data to Supabase
 async function saveReportWithBackup(newReport) {
     try {
         if (supabase) {
-            // Only include columns that exist in your current table structure
+            // Include user data fields that we added to the database
             const reportData = {
                 id: newReport.id,
                 type: newReport.type,
@@ -672,8 +712,11 @@ async function saveReportWithBackup(newReport) {
                 photo: newReport.photo,
                 upvotes: newReport.upvotes,
                 status: newReport.status,
-                date: newReport.date.toISOString()
-                // Removed user fields that don't exist in your table
+                date: newReport.date.toISOString(),
+                // Add user data fields
+                user_id: newReport.user_id,
+                user_name: newReport.user_name,
+                user_email: newReport.user_email
             };
 
             const { data, error } = await supabase
@@ -685,7 +728,7 @@ async function saveReportWithBackup(newReport) {
                 throw error;
             }
 
-            console.log('Report saved to Supabase:', data);
+            console.log('Report saved to Supabase with user data:', data);
             return newReport;
         }
 
@@ -704,6 +747,75 @@ async function saveReportWithBackup(newReport) {
 
     } catch (error) {
         console.error('Error saving report:', error);
+        throw error;
+    }
+}
+
+// Fetch user statistics from Supabase
+async function fetchUserStatistics() {
+    if (!supabase || !appState.user) {
+        throw new Error('Supabase not available or user not logged in');
+    }
+
+    try {
+        // Fetch user's reports
+        const { data: userReports, error: reportsError } = await supabase
+            .from('reports')
+            .select('*')
+            .or(`user_id.eq.${appState.user.id},user_email.eq.${appState.user.email}`)
+            .order('date', { ascending: false });
+
+        if (reportsError) {
+            console.error('Error fetching user reports:', reportsError);
+        }
+
+        // Fetch user's upvotes received (sum of upvotes on their reports)
+        let totalUpvotes = 0;
+        if (userReports && userReports.length > 0) {
+            // Use the upvotes count from the reports table instead of querying upvotes table
+            // This avoids the BIGINT/INTEGER type mismatch issue
+            totalUpvotes = userReports.reduce((sum, report) => sum + (report.upvotes || 0), 0);
+        }
+
+        // Get member since date from user data or reports
+        let memberSince = appState.user.created_at;
+        if (!memberSince && userReports && userReports.length > 0) {
+            // If no created_at in user, use earliest report date
+            const sortedReports = userReports.sort((a, b) => new Date(a.date) - new Date(b.date));
+            memberSince = sortedReports[0].date;
+        }
+
+        // Process reports for display
+        const processedReports = userReports ? userReports.map(report => ({
+            id: report.id,
+            type: report.type,
+            location: {
+                lat: report.lat,
+                lng: report.lng,
+                address: report.address
+            },
+            description: report.description,
+            photo: report.photo,
+            upvotes: report.upvotes || 0,
+            status: report.status,
+            date: new Date(report.date),
+            user_id: report.user_id,
+            user_email: report.user_email,
+            user_name: report.user_name,
+            user_city: report.user_city
+        })) : [];
+
+        console.log(`Fetched ${processedReports.length} reports and ${totalUpvotes} upvotes for user`);
+
+        return {
+            totalReports: processedReports.length,
+            totalUpvotes: totalUpvotes,
+            memberSince: memberSince,
+            userReports: processedReports
+        };
+
+    } catch (error) {
+        console.error('Error in fetchUserStatistics:', error);
         throw error;
     }
 }
@@ -1024,7 +1136,7 @@ function setupCityChangeModal() {
                 localStorage.setItem('safecity-user-location', JSON.stringify(appState.userLocation));
 
                 // Reload data for new city
-                await loadDataWithBackup();
+                appState.reports = await loadFromSupabase();
 
                 // Update UI
                 updateUserInterface();
@@ -1563,51 +1675,71 @@ const themeManager = {
 };
 
 // Enhanced interaction features
-function addUpvote(reportId) {
-    const report = appState.reports.find(r => r.id === reportId);
-    if (report) {
-        report.upvotes += 1;
+async function addUpvote(reportId) {
+    try {
+        if (!supabase) {
+            console.error('Supabase not available for upvoting');
+            return;
+        }
 
-        // Update in database if available
-        updateReportUpvotes(reportId, report.upvotes);
+        // Check if user already upvoted this report
+        const { data: existingUpvote, error: checkError } = await supabase
+            .from('upvotes')
+            .select('id')
+            .eq('report_id', String(reportId)) // Convert to string to handle BIGINT
+            .eq('user_email', appState.user?.email || 'anonymous')
+            .single();
 
+        if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows found
+            console.error('Error checking existing upvote:', checkError);
+            return;
+        }
+
+        if (existingUpvote) {
+            console.log('User already upvoted this report');
+            return;
+        }
+
+        // Add new upvote
+        const upvoteData = {
+            report_id: String(reportId), // Convert to string to handle BIGINT
+            user_id: appState.user?.id || null,
+            user_email: appState.user?.email || 'anonymous',
+            ip_address: null // Could be added for anonymous users
+        };
+
+        const { error: insertError } = await supabase
+            .from('upvotes')
+            .insert([upvoteData]);
+
+        if (insertError) {
+            console.error('Error adding upvote:', insertError);
+            return;
+        }
+
+        console.log(`Successfully upvoted report ${reportId}`);
+
+        // Refresh the current view to show updated counts
         if (appState.currentSection === 'map') {
+            // Reload reports to get updated counts
+            appState.reports = await loadFromSupabase();
             renderMapMarkers();
         }
         if (appState.currentSection === 'stats') {
+            appState.reports = await loadFromSupabase();
             updateStatsView();
         }
-
-        console.log(`Upvoted report ${reportId}, new total: ${report.upvotes}`);
-    }
-}
-
-// Update report upvotes in database
-async function updateReportUpvotes(reportId, newUpvoteCount) {
-    try {
-        if (supabase) {
-            const { error } = await supabase
-                .from('reports')
-                .update({ upvotes: newUpvoteCount })
-                .eq('id', reportId);
-
-            if (error) {
-                console.error('Error updating upvotes in Supabase:', error);
-            }
-        }
-
-        // Also update localStorage
-        const localReports = JSON.parse(localStorage.getItem('safecity-reports') || '[]');
-        const reportIndex = localReports.findIndex(r => r.id === reportId);
-        if (reportIndex !== -1) {
-            localReports[reportIndex].upvotes = newUpvoteCount;
-            localStorage.setItem('safecity-reports', JSON.stringify(localReports));
+        if (appState.currentSection === 'profile') {
+            updateProfileSection();
         }
 
     } catch (error) {
-        console.error('Error updating upvotes:', error);
+        console.error('Error in addUpvote:', error);
     }
 }
+
+// Note: updateReportUpvotes function removed - upvote counts are now automatically 
+// updated by database triggers when records are added/removed from the upvotes table
 
 // Search and filter functionality
 function searchReports(query) {
