@@ -1,10 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeCity - Loading...</title>
+    <!-- Standard favicon -->
     <link rel="icon" type="image/png" href="assets/logo-6.jpeg">
+
+    <!-- Apple Touch Icons for iPhone/iPad -->
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="120x120" href="assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="76x76" href="assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="60x60" href="assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="57x57" href="assets/logo-6.jpeg">
+
+    <!-- Additional meta for iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SafeCity">
     <style>
         body {
             margin: 0;
@@ -16,23 +31,32 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+
         .loading {
             text-align: center;
             color: white;
         }
+
         .spinner {
             width: 40px;
             height: 40px;
-            border: 4px solid rgba(255,255,255,0.3);
+            border: 4px solid rgba(255, 255, 255, 0.3);
             border-top: 4px solid white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
+
         .alert {
             position: fixed;
             top: 20px;
@@ -46,12 +70,14 @@
             opacity: 0;
             transition: opacity 0.3s;
         }
+
         .alert.success {
             background-color: #4CAF50;
             opacity: 1;
         }
     </style>
 </head>
+
 <body>
     <div class="loading">
         <div class="spinner"></div>
@@ -68,7 +94,7 @@
             alertEl.textContent = message;
             alertEl.className = 'alert ' + type;
             alertEl.style.display = 'block';
-            
+
             // Hide alert after 5 seconds
             setTimeout(() => {
                 alertEl.style.display = 'none';
@@ -78,7 +104,7 @@
         // Check authentication and redirect accordingly
         function checkAuthAndRedirect() {
             const rememberedUser = localStorage.getItem('safecity-user');
-            
+
             if (rememberedUser) {
                 // User is authenticated, redirect to main app
                 window.location.replace('pages/dashboard.html');
@@ -87,15 +113,16 @@
                 window.location.replace('pages/auth.html');
             }
         }
-        
+
         // Show welcome message if this is a new signup
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('signup') === 'success') {
             showAlert('success', 'Welcome to SafeCity! Please check your email to verify your account, then sign in.');
         }
-        
+
         // Redirect after a brief delay to show the loading animation
         setTimeout(checkAuthAndRedirect, 2000);
     </script>
 </body>
+
 </html>
