@@ -183,33 +183,35 @@ async function updateProfileSection() {
     }
 
     try {
-        // Fetch user statistics from Supabase
-        const userStats = await fetchUserStatistics();
+        // Only fetch from Supabase if it's available and initialized
+        if (supabase && appState.user) {
+            const userStats = await fetchUserStatistics();
 
-        // Update stats with real data
-        if (userTotalReports) {
-            userTotalReports.textContent = userStats.totalReports;
-        }
-
-        if (userUpvotesReceived) {
-            userUpvotesReceived.textContent = userStats.totalUpvotes;
-        }
-
-        if (userMemberSince) {
-            if (userStats.memberSince) {
-                const memberDate = new Date(userStats.memberSince);
-                userMemberSince.textContent = memberDate.toLocaleDateString('en-US', {
-                    month: 'long',
-                    year: 'numeric'
-                });
-            } else {
-                userMemberSince.textContent = 'Recently';
+            // Update stats with real data
+            if (userTotalReports) {
+                userTotalReports.textContent = userStats.totalReports;
             }
+
+            if (userUpvotesReceived) {
+                userUpvotesReceived.textContent = userStats.totalUpvotes;
+            }
+
+            if (userMemberSince) {
+                if (userStats.memberSince) {
+                    const memberDate = new Date(userStats.memberSince);
+                    userMemberSince.textContent = memberDate.toLocaleDateString('en-US', {
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                } else {
+                    userMemberSince.textContent = 'Recently';
+                }
+            }
+
+            // Update user reports list with real data
+            updateUserReportsList(userStats.userReports);
+            return; // Exit early if Supabase worked
         }
-
-        // Update user reports list with real data
-        updateUserReportsList(userStats.userReports);
-
     } catch (error) {
         console.error('Error fetching user statistics:', error);
 
@@ -753,8 +755,12 @@ async function saveReportWithBackup(newReport) {
 
 // Fetch user statistics from Supabase
 async function fetchUserStatistics() {
-    if (!supabase || !appState.user) {
-        throw new Error('Supabase not available or user not logged in');
+    // This function should only be called when Supabase is confirmed available
+    if (!supabase) {
+        throw new Error('Supabase client not initialized');
+    }
+    if (!appState.user) {
+        throw new Error('User not logged in');
     }
 
     try {
@@ -1156,7 +1162,7 @@ function setupCityChangeModal() {
             } catch (error) {
                 console.error('Error updating city:', error);
                 hideLoading();
-                alert('Error updating city. Please try again.');
+                alert(`Error updating city: ${error.message || error}. Please try again.`);
             }
         });
     }
@@ -1174,24 +1180,36 @@ function setupCityChangeModal() {
 // Update user city in database
 async function updateUserCity(newCity) {
     try {
-        if (supabase && appState.user) {
-            const { error } = await supabase
-                .from('users')
-                .update({
-                    city: newCity,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', appState.user.id);
-
-            if (error) {
-                console.error('Error updating user city in Supabase:', error);
-                throw error;
-            }
-
-            console.log('User city updated in Supabase');
+        if (!supabase) {
+            throw new Error('Supabase not available');
         }
+
+        if (!appState.user) {
+            throw new Error('User not logged in');
+        }
+
+        if (!appState.user.id) {
+            throw new Error('User ID not available');
+        }
+
+        console.log('Updating city for user:', appState.user.id, 'to:', newCity);
+
+        const { error } = await supabase
+            .from('users')
+            .update({
+                city: newCity
+            })
+            .eq('id', appState.user.id);
+
+        if (error) {
+            console.error('Supabase error updating user city:', error);
+            throw new Error(`Database error: ${error.message}`);
+        }
+
+        console.log('User city updated successfully in Supabase');
+
     } catch (error) {
-        console.error('Error updating user city:', error);
+        console.error('Error in updateUserCity:', error);
         throw error;
     }
 }
