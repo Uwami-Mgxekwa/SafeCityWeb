@@ -659,6 +659,26 @@ async function handleReportSubmission() {
         hideLoading();
         showSuccessModal(newReport.id);
 
+        // Send notifications
+        if (appState.user) {
+            try {
+                console.log('Sending notification for user:', appState.user.email);
+                console.log('Report data:', newReport);
+                const result = await sendNotification('report_submitted', appState.user, newReport, ['email']);
+                console.log('Notification result:', result);
+
+                if (result.email) {
+                    console.log('✅ Email notification sent successfully!');
+                } else {
+                    console.log('❌ Email notification failed');
+                }
+            } catch (error) {
+                console.error('Failed to send notification:', error);
+            }
+        } else {
+            console.log('No user data available for notifications');
+        }
+
         if (appState.currentSection === 'map') {
             renderMapMarkers();
         }
@@ -1601,9 +1621,29 @@ function setupModalListeners() {
 function showSuccessModal(reportId) {
     const modal = document.getElementById('success-modal');
     const reportIdElement = document.getElementById('report-id');
+    const whatsappBtn = document.getElementById('notify-whatsapp');
 
     if (modal && reportIdElement) {
         reportIdElement.textContent = reportId;
+
+        // Add WhatsApp notification handler
+        if (whatsappBtn) {
+            whatsappBtn.onclick = () => {
+                console.log('📱 WhatsApp button clicked');
+                const report = appState.reports.find(r => r.id == reportId);
+                console.log('Found report:', report);
+                console.log('User data:', appState.user);
+
+                if (report && appState.user) {
+                    sendWhatsAppNotification('report_submitted', appState.user, report);
+                } else {
+                    console.error('❌ Missing report or user data for WhatsApp');
+                }
+            };
+        } else {
+            console.log('❌ WhatsApp button not found');
+        }
+
         modal.classList.add('show');
         modal.style.display = 'flex';
     }
@@ -2091,3 +2131,218 @@ function checkForUpdates() {
 checkForUpdates();
 
 console.log('SafeCity JavaScript with enhanced authentication, user management, and city filtering initialized successfully');
+// ===== NOTIFICATION SYSTEM =====
+
+// Notification System Configuration
+const NOTIFICATION_CONFIG = {
+    emailjs: {
+        publicKey: 'VNaptzurXMluqfUZq', // You'll get this from EmailJS
+        serviceId: 'service_qny8g5b',
+        templateId: 'template_429ng3j'
+    },
+    whatsapp: {
+        enabled: true,
+        businessNumber: '+27785002274' // Replace with your WhatsApp number
+    }
+};
+
+// Initialize EmailJS
+function initializeEmailJS() {
+    if (typeof emailjs !== 'undefined') {
+        emailjs.init(NOTIFICATION_CONFIG.emailjs.publicKey);
+        console.log('EmailJS initialized successfully');
+        return true;
+    }
+    console.warn('EmailJS not loaded');
+    return false;
+}
+
+// Email notification functions
+async function sendEmailNotification(type, userData, reportData = null) {
+    try {
+        console.log('📧 Attempting to send email notification...');
+        console.log('EmailJS available:', typeof emailjs !== 'undefined');
+        console.log('User data:', userData);
+        console.log('Report data:', reportData);
+
+        if (!emailjs) {
+            console.warn('❌ EmailJS not available');
+            return false;
+        }
+
+        const templateParams = {
+            to_email: userData.email,
+            user_name: userData.first_name || 'User',
+            notification_type: type,
+            app_name: 'SafeCity',
+            app_url: window.location.origin
+        };
+
+        console.log('📧 Template params:', templateParams);
+
+        // Add report-specific data if provided
+        if (reportData) {
+            templateParams.report_id = reportData.id;
+            templateParams.report_type = reportData.type;
+            templateParams.report_location = reportData.location?.address || 'Unknown location';
+            templateParams.report_status = reportData.status;
+            templateParams.report_description = reportData.description;
+        }
+
+        const result = await emailjs.send(
+            NOTIFICATION_CONFIG.emailjs.serviceId,
+            NOTIFICATION_CONFIG.emailjs.templateId,
+            templateParams
+        );
+
+        console.log('Email sent successfully:', result);
+        return true;
+
+    } catch (error) {
+        console.error('Email notification failed:', error);
+        return false;
+    }
+}
+
+// WhatsApp notification functions
+function sendWhatsAppNotification(type, userData, reportData = null) {
+    try {
+        if (!NOTIFICATION_CONFIG.whatsapp.enabled) {
+            console.log('WhatsApp notifications disabled');
+            return false;
+        }
+
+        let message = '';
+
+        switch (type) {
+            case 'report_submitted':
+                message = `🏙️ *SafeCity Report Submitted*\n\nHi ${userData.first_name}!\n\nYour report has been successfully submitted:\n\n📍 *Location:* ${reportData?.location?.address}\n🔧 *Issue:* ${reportData?.type}\n📝 *Description:* ${reportData?.description}\n🆔 *Report ID:* #${reportData?.id}\n\nWe'll notify you when there are updates!\n\nThank you for helping improve our city! 🌟`;
+                break;
+            case 'report_updated':
+                message = `🔄 *SafeCity Report Update*\n\nHi ${userData.first_name}!\n\nYour report #${reportData?.id} has been updated:\n\n📍 *Location:* ${reportData?.location?.address}\n🔧 *Issue:* ${reportData?.type}\n📊 *New Status:* ${reportData?.status}\n\nView your report: ${window.location.origin}\n\nThanks for using SafeCity! 🏙️`;
+                break;
+            case 'welcome':
+                message = `🎉 *Welcome to SafeCity!*\n\nHi ${userData.first_name}!\n\nThank you for joining SafeCity - together we're making our communities better!\n\n✅ Report infrastructure issues\n✅ Track repair progress\n✅ Connect with your community\n\nStart reporting: ${window.location.origin}\n\nLet's build better cities together! 🌟`;
+                break;
+            default:
+                message = `📱 *SafeCity Notification*\n\nHi ${userData.first_name}!\n\nYou have a new notification from SafeCity.\n\nVisit: ${window.location.origin}`;
+        }
+
+        // Create WhatsApp URL
+        const whatsappUrl = `https://wa.me/${NOTIFICATION_CONFIG.whatsapp.businessNumber.replace('+', '')}?text=${encodeURIComponent(message)}`;
+
+        // Open WhatsApp (this will work on mobile and desktop)
+        window.open(whatsappUrl, '_blank');
+
+        console.log('WhatsApp notification opened');
+        return true;
+
+    } catch (error) {
+        console.error('WhatsApp notification failed:', error);
+        return false;
+    }
+}
+
+// Combined notification function
+async function sendNotification(type, userData, reportData = null, methods = ['email']) {
+    const results = {};
+
+    if (methods.includes('email')) {
+        results.email = await sendEmailNotification(type, userData, reportData);
+    }
+
+    if (methods.includes('whatsapp')) {
+        results.whatsapp = sendWhatsAppNotification(type, userData, reportData);
+    }
+
+    return results;
+}
+
+// Initialize notifications when app loads
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize EmailJS after a short delay to ensure it's loaded
+    setTimeout(() => {
+        initializeEmailJS();
+    }, 1000);
+});
+// ===== TESTING FUNCTIONS =====
+
+    // Test email notification manually
+    window.testEmailNotification = async function() {
+        console.log('🧪 Testing email notification...');
+
+        if (!appState.user) {
+            console.error('❌ No user logged in. Please log in first.');
+            return;
+        }
+
+        const testReport = {
+            id: 'TEST123',
+            type: 'pothole',
+            location: { address: 'Test Street, Test City' },
+            description: 'This is a test report',
+            status: 'new'
+        };
+
+        try {
+            const result = await sendEmailNotification('report_submitted', appState.user, testReport);
+            if (result) {
+                console.log('✅ Test email sent successfully!');
+                alert('✅ Test email sent! Check your inbox.');
+            } else {
+                console.log('❌ Test email failed');
+                alert('❌ Test email failed. Check console for details.');
+            }
+        } catch (error) {
+            console.error('❌ Test email error:', error);
+            alert('❌ Test email error: ' + error.message);
+        }
+    };
+
+// Test WhatsApp notification manually
+window.testWhatsAppNotification = function () {
+    console.log('🧪 Testing WhatsApp notification...');
+
+    if (!appState.user) {
+        console.error('❌ No user logged in. Please log in first.');
+        return;
+    }
+
+    const testReport = {
+        id: 'TEST123',
+        type: 'pothole',
+        location: { address: 'Test Street, Test City' },
+        description: 'This is a test report',
+        status: 'new'
+    };
+
+    try {
+        const result = sendWhatsAppNotification('report_submitted', appState.user, testReport);
+        if (result) {
+            console.log('✅ WhatsApp test opened successfully!');
+        } else {
+            console.log('❌ WhatsApp test failed');
+        }
+    } catch (error) {
+        console.error('❌ WhatsApp test error:', error);
+    }
+};
+
+// Check notification configuration
+window.checkNotificationConfig = function () {
+    console.log('🔧 Notification Configuration:');
+    console.log('EmailJS Public Key:', NOTIFICATION_CONFIG.emailjs.publicKey);
+    console.log('EmailJS Service ID:', NOTIFICATION_CONFIG.emailjs.serviceId);
+    console.log('EmailJS Template ID:', NOTIFICATION_CONFIG.emailjs.templateId);
+    console.log('WhatsApp Number:', NOTIFICATION_CONFIG.whatsapp.businessNumber);
+    console.log('EmailJS Available:', typeof emailjs !== 'undefined');
+    console.log('Current User:', appState.user);
+
+    if (NOTIFICATION_CONFIG.emailjs.publicKey === 'YOUR_EMAILJS_PUBLIC_KEY') {
+        console.warn('⚠️ EmailJS not configured yet! Update the config in js/script.js');
+    }
+
+    if (NOTIFICATION_CONFIG.whatsapp.businessNumber === '+27123456789') {
+        console.warn('⚠️ WhatsApp number not updated! Update the config in js/script.js');
+    }
+};
