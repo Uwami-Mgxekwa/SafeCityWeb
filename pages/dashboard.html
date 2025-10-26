@@ -429,14 +429,40 @@
         </div>
     </div>
 
-    <script src="../js/script.js"></script>
+    <!-- Load external libraries first -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- EmailJS for free email notifications -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <!-- jsPDF for PDF export functionality -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- jsPDF for PDF export functionality -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF for PDF export functionality - working CDN -->
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script>
+        // Wait a moment for the script to load, then check
+        setTimeout(() => {
+            console.log('🔍 jsPDF loading check...');
+            console.log('window.jsPDF available:', !!window.jsPDF);
+            console.log('window.jspdf available:', !!window.jspdf);
+
+            // Check all possible locations
+            if (window.jsPDF) {
+                console.log('✅ jsPDF loaded at window.jsPDF');
+                try {
+                    const testDoc = new window.jsPDF();
+                    console.log('✅ jsPDF test document created successfully');
+                } catch (e) {
+                    console.error('❌ jsPDF test failed:', e);
+                }
+            } else if (window.jspdf && window.jspdf.jsPDF) {
+                console.log('✅ jsPDF found at window.jspdf.jsPDF');
+                window.jsPDF = window.jspdf.jsPDF;
+                console.log('✅ Moved jsPDF to window.jsPDF');
+            } else {
+                console.error('❌ jsPDF not loaded from any location');
+                console.log('Available window properties:', Object.keys(window).filter(k => k.toLowerCase().includes('pdf')));
+            }
+        }, 500);
+    </script>
+    <!-- Load our main script after libraries -->
+    <script src="../js/script.js"></script>
 </body>
 
 </html>

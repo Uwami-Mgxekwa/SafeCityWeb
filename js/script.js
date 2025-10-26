@@ -254,7 +254,7 @@ function updateUserReportsList(userReports) {
                 <p>Help make your community better by reporting infrastructure issues!</p>
             </div>
         `;
-        
+
         // TEMPORARY: Create sample reports for testing PDF export
         console.log('🧪 No reports found, creating sample data for testing');
         const sampleReports = [
@@ -268,7 +268,7 @@ function updateUserReportsList(userReports) {
                 upvotes: 5
             },
             {
-                id: 'sample-2', 
+                id: 'sample-2',
                 type: 'streetlight',
                 location: { address: 'Park Avenue, Your City' },
                 description: 'Street light not working',
@@ -277,7 +277,7 @@ function updateUserReportsList(userReports) {
                 upvotes: 3
             }
         ];
-        
+
         // Add sample reports to the list for testing
         sampleReports.forEach(report => {
             const reportItem = document.createElement('div');
@@ -304,7 +304,7 @@ function updateUserReportsList(userReports) {
             `;
             userReportsList.appendChild(reportItem);
         });
-        
+
         updateExportButtonVisibility();
         return;
     }
@@ -2964,6 +2964,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 1000);
 });// =====PDF EXPORT FUNCTIONALITY =====
 
+// Check if jsPDF is available, with fallback to browser print
+function checkPDFLibrary() {
+    console.log('🔍 Checking PDF library availability...');
+    console.log('window.jsPDF type:', typeof window.jsPDF);
+
+    if (window.jsPDF && typeof window.jsPDF === 'function') {
+        console.log('✅ jsPDF library is available');
+        return Promise.resolve(true);
+    } else {
+        console.log('⚠️ jsPDF not available, will use browser print fallback');
+        return Promise.resolve(false);
+    }
+}
+
 // Initialize PDF export functionality
 function initializePDFExport() {
     const exportBtn = document.getElementById('export-reports-btn');
@@ -2976,8 +2990,18 @@ function initializePDFExport() {
 // Export user reports to PDF
 async function exportUserReportsToPDF() {
     try {
-        if (!window.jsPDF) {
-            alert('PDF export library not loaded. Please refresh the page and try again.');
+        // Check if PDF library is available
+        const isLibraryReady = await checkPDFLibrary();
+        if (!isLibraryReady) {
+            // Fallback to browser print method
+            console.log('📄 Using browser print fallback for PDF export');
+            console.log('📄 Checking if exportReportsUsingPrint function exists:', typeof exportReportsUsingPrint);
+            if (typeof exportReportsUsingPrint === 'function') {
+                exportReportsUsingPrint();
+            } else {
+                console.error('❌ exportReportsUsingPrint function not found');
+                alert('PDF export is not available. The print fallback function is missing.');
+            }
             return;
         }
 
@@ -3027,8 +3051,8 @@ async function exportUserReportsToPDF() {
 
 // Generate PDF document
 async function generateReportsPDF(reports) {
-    const { jsPDF } = window.jsPDF;
-    const doc = new jsPDF();
+    // Use jsPDF directly from window
+    const doc = new window.jsPDF();
 
     // PDF Configuration
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -3243,39 +3267,39 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 1000);
 });// ===== DEBUGGING FUNCTIONS =====
 
-    // Test export button visibility
-    window.testExportButton = function() {
-        console.log('🧪 Testing export button...');
+// Test export button visibility
+window.testExportButton = function () {
+    console.log('🧪 Testing export button...');
 
-        const exportBtn = document.getElementById('export-reports-btn');
-        const userReportsList = document.getElementById('user-reports-list');
+    const exportBtn = document.getElementById('export-reports-btn');
+    const userReportsList = document.getElementById('user-reports-list');
 
-        console.log('Export button element:', exportBtn);
-        console.log('User reports list element:', userReportsList);
+    console.log('Export button element:', exportBtn);
+    console.log('User reports list element:', userReportsList);
 
-        if (exportBtn) {
-            console.log('Export button current display:', exportBtn.style.display);
-            console.log('Export button computed display:', window.getComputedStyle(exportBtn).display);
+    if (exportBtn) {
+        console.log('Export button current display:', exportBtn.style.display);
+        console.log('Export button computed display:', window.getComputedStyle(exportBtn).display);
 
-            // Force show the button for testing
-            exportBtn.style.display = 'flex';
-            console.log('✅ Export button forced to show');
-        } else {
-            console.log('❌ Export button not found');
-        }
+        // Force show the button for testing
+        exportBtn.style.display = 'flex';
+        console.log('✅ Export button forced to show');
+    } else {
+        console.log('❌ Export button not found');
+    }
 
-        if (userReportsList) {
-            const reportItems = userReportsList.querySelectorAll('.user-report-item');
-            console.log('Report items in list:', reportItems.length);
+    if (userReportsList) {
+        const reportItems = userReportsList.querySelectorAll('.user-report-item');
+        console.log('Report items in list:', reportItems.length);
 
-            reportItems.forEach((item, index) => {
-                console.log(`Report ${index + 1}:`, item.textContent.substring(0, 50) + '...');
-            });
-        }
+        reportItems.forEach((item, index) => {
+            console.log(`Report ${index + 1}:`, item.textContent.substring(0, 50) + '...');
+        });
+    }
 
-        // Test the visibility function
-        updateExportButtonVisibility();
-    };
+    // Test the visibility function
+    updateExportButtonVisibility();
+};
 
 // Force show export button
 window.showExportButton = function () {
@@ -3287,3 +3311,178 @@ window.showExportButton = function () {
         console.log('❌ Export button not found');
     }
 };
+// Fallback PDF export using browser print functionality
+function exportReportsUsingPrint() {
+    console.log('📄 Creating printable report page...');
+
+    // Get user reports
+    const userReportsList = document.getElementById('user-reports-list');
+    const reportItems = userReportsList ? userReportsList.querySelectorAll('.user-report-item') : [];
+
+    if (reportItems.length === 0) {
+        alert('No reports found to export.');
+        return;
+    }
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+
+    // Get user info
+    const userName = document.getElementById('profile-name')?.textContent || 'User';
+    const userEmail = document.getElementById('profile-email')?.textContent || '';
+    const userCity = document.getElementById('profile-city')?.textContent || '';
+    const totalReports = document.getElementById('user-total-reports')?.textContent || '0';
+    const totalUpvotes = document.getElementById('user-upvotes-received')?.textContent || '0';
+
+    // Create HTML content for printing
+    const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>SafeCity Reports - ${userName}</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                    color: #333;
+                }
+                .header {
+                    text-align: center;
+                    border-bottom: 2px solid #667eea;
+                    padding-bottom: 20px;
+                    margin-bottom: 30px;
+                }
+                .logo {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #667eea;
+                    margin-bottom: 10px;
+                }
+                .user-info {
+                    background: #f8f9ff;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin-bottom: 30px;
+                }
+                .stats {
+                    display: flex;
+                    justify-content: space-around;
+                    margin: 20px 0;
+                    text-align: center;
+                }
+                .stat {
+                    padding: 10px;
+                }
+                .stat-value {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #667eea;
+                }
+                .reports-section {
+                    margin-top: 30px;
+                }
+                .report-item {
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                    background: #fff;
+                }
+                .report-header {
+                    font-weight: bold;
+                    color: #667eea;
+                    margin-bottom: 10px;
+                }
+                .report-details {
+                    margin-bottom: 10px;
+                }
+                .report-meta {
+                    font-size: 12px;
+                    color: #666;
+                    display: flex;
+                    gap: 15px;
+                }
+                .status {
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                }
+                .status.new { background: #fff3cd; color: #856404; }
+                .status.acknowledged { background: #d1ecf1; color: #0c5460; }
+                .status.resolved { background: #d4edda; color: #155724; }
+                @media print {
+                    body { margin: 0; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="logo">🛣️ SafeCity Report</div>
+                <h1>User Reports Export</h1>
+                <p>Generated on ${new Date().toLocaleDateString()}</p>
+            </div>
+            
+            <div class="user-info">
+                <h2>User Information</h2>
+                <p><strong>Name:</strong> ${userName}</p>
+                <p><strong>Email:</strong> ${userEmail}</p>
+                <p><strong>City:</strong> ${userCity}</p>
+                
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value">${totalReports}</div>
+                        <div>Total Reports</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${totalUpvotes}</div>
+                        <div>Upvotes Received</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="reports-section">
+                <h2>Recent Reports</h2>
+                ${Array.from(reportItems).map((item, index) => {
+        const title = item.querySelector('h4')?.textContent || `Report ${index + 1}`;
+        const location = item.querySelector('p')?.textContent || 'Location not specified';
+        const date = item.querySelector('.report-date')?.textContent || '';
+        const upvotes = item.querySelector('.report-upvotes')?.textContent || '0';
+        const status = item.querySelector('.report-status')?.textContent || 'Unknown';
+        const statusClass = item.querySelector('.report-status')?.className.split(' ').find(c => ['new', 'acknowledged', 'resolved'].includes(c)) || 'new';
+
+        return `
+                        <div class="report-item">
+                            <div class="report-header">${title}</div>
+                            <div class="report-details">
+                                <p><strong>Location:</strong> ${location}</p>
+                                <div class="report-meta">
+                                    <span>${date}</span>
+                                    <span>${upvotes}</span>
+                                    <span class="status ${statusClass}">${status}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+    }).join('')}
+            </div>
+            
+            <div class="no-print" style="margin-top: 30px; text-align: center;">
+                <button onclick="window.print()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">Print/Save as PDF</button>
+                <button onclick="window.close()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Close</button>
+            </div>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    // Auto-trigger print dialog after a short delay
+    setTimeout(() => {
+        printWindow.print();
+    }, 500);
+
+    console.log('✅ Print window opened successfully');
+}
