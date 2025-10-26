@@ -5,9 +5,10 @@
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![Font Awesome](https://img.shields.io/badge/Font_Awesome-339AF0?style=for-the-badge&logo=fontawesome&logoColor=white)](https://fontawesome.com/)
+[![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
+[![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 
-> **Report. Track. Fix.** - A community-driven platform for reporting and tracking infrastructure issues in Johannesburg and beyond.
+> **Report. Track. Fix.** - A Progressive Web App for reporting and tracking infrastructure issues with real-time database, user authentication, and comprehensive reporting features.
 
 ---
 
@@ -54,20 +55,30 @@ To create safer, better-maintained cities through community engagement and trans
 - **Smart filtering** by issue type (Potholes, Water Leaks, Traffic Lights, etc.)
 - **Status-based color coding** (New, Acknowledged, Resolved)
 - **Interactive markers** with detailed issue information
+- **🔍 Real-time search** with instant filtering and visual feedback
 - **Hover effects** showing upvotes, report date, and descriptions
 
 ### 📝 **Comprehensive Reporting System**
-- **📍 GPS Location Detection**: Automatic location capture with manual override option
+- **�  GPS Location Detection**: Automatic location capture with manual override option
 - **📸 Photo Upload**: Take photos directly from device camera
 - **🏷️ Issue Categories**: 
-  - 🛣️ Potholes
-  - 💧 Water Leaks
-  - 🚦 Traffic Lights
-  - 💡 Street Lights
-  - 🕳️ Drainage Issues
-  - 🔧 Other Infrastructure
+  - � ️ Potholes
+  - �  Water Leaks
+  - � STraffic Lights
+  - �️ Street Lights
+  - �️ Drainange Issues
+  - � Othaer Infrastructure
 - **📝 Detailed Descriptions**: Optional text descriptions for additional context
 - **✅ Instant Feedback**: Success confirmation with unique report ID
+- **� Emaoil Notifications**: Automated email alerts via EmailJS
+- **� WhatstApp Integration**: Share reports directly to WhatsApp
+
+### 👤 **User Authentication & Profiles**
+- **🔐 Secure Authentication**: Email/password login with Supabase Auth
+- **👤 User Profiles**: Personal dashboard with statistics and report history
+- **� Userd Statistics**: Track your reports, upvotes received, and member status
+- **� PDF Enxport**: Generate professional PDF reports of your submissions
+- **🏙️ Multi-city Support**: Switch between different cities
 
 ### 📊 **Community Impact Dashboard**
 - **📈 Real-time Statistics**:
@@ -78,13 +89,21 @@ To create safer, better-maintained cities through community engagement and trans
 - **🔥 Trending Issues**: Most reported problems by location and type
 - **👍 Community Voting**: Upvote system for issue prioritization
 - **📋 Status Tracking**: Monitor progress from report to resolution
+- **🗃️ Database Integration**: Real-time data with Supabase backend
+
+### 📱 **Progressive Web App (PWA)**
+- **📲 App Installation**: Install on mobile devices and desktop
+- **🔄 Offline Functionality**: Work without internet connection
+- **🔄 Background Sync**: Sync data when connection is restored
+- **📱 Native App Experience**: Full-screen mode and app-like navigation
+- **🔔 Push Notifications**: Real-time updates (ready for implementation)
 
 ### 🌙 **Advanced UI/UX Features**
 - **🎨 Modern Design**: Gradient backgrounds and smooth animations
 - **🌓 Dark/Light Mode Toggle**: Complete theme switching with system preference detection
 - **📱 Fully Responsive**: Optimized for desktop, tablet, and mobile devices
-- **⚡ Progressive Web App Ready**: Offline functionality and app-like experience
 - **♿ Accessibility Compliant**: WCAG guidelines adherence
+- **🔍 Advanced Search**: Real-time search with debouncing and visual feedback
 
 ---
 
@@ -138,13 +157,24 @@ To create safer, better-maintained cities through community engagement and trans
 | **JavaScript (ES6+)** | Interactive Functionality | ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black) |
 | **Font Awesome 6.0** | Icons & UI Elements | ![Font Awesome](https://img.shields.io/badge/Font_Awesome-339AF0?style=flat-square&logo=fontawesome&logoColor=white) |
 
+### Backend & Services
+| Technology | Purpose | Badge |
+|------------|---------|-------|
+| **Supabase** | Database & Authentication | ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white) |
+| **EmailJS** | Email Notifications | ![EmailJS](https://img.shields.io/badge/EmailJS-FF6B6B?style=flat-square&logo=gmail&logoColor=white) |
+| **Service Worker** | PWA & Offline Support | ![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=flat-square&logo=pwa&logoColor=white) |
+
 ### Key Features & APIs Used
 - **📍 Geolocation API**: GPS location detection
 - **📸 MediaDevices API**: Camera access for photo capture
 - **💾 Local Storage**: Data persistence and theme preferences
 - **🎨 CSS Custom Properties**: Dynamic theming system
 - **📱 Responsive Design**: CSS Grid & Flexbox
-- **📄 Service Worker Ready**: PWA preparation
+- **📄 Service Worker**: PWA functionality and offline support
+- **🗃️ Supabase Database**: Real-time data storage and retrieval
+- **🔐 Supabase Auth**: User authentication and session management
+- **📧 EmailJS**: Automated email notifications
+- **📄 Browser Print API**: PDF export functionality
 
 ---
 
@@ -154,6 +184,7 @@ To create safer, better-maintained cities through community engagement and trans
 - 🌐 Modern web browser (Chrome 80+, Firefox 75+, Safari 13+, Edge 80+)
 - 📱 Device with camera capability (optional, for photo reports)
 - 📍 Location services enabled (optional, for GPS detection)
+- 🌐 Internet connection (for database features, offline mode available)
 
 ### Quick Start
 
@@ -185,10 +216,19 @@ To create safer, better-maintained cities through community engagement and trans
 1. **📁 Project Structure Setup**
    ```bash
    SafeCityWeb/
-   ├── 📄 index.html          # Main application file
-   ├── 🎨 styles.css          # Complete styling system
-   ├── ⚡ script.js           # Application logic
-   ├── 🖼️ logo.jpeg           # Application logo
+   ├── 📄 index.html          # Landing page
+   ├── 📁 pages/
+   │   ├── 📄 dashboard.html  # Main application
+   │   └── 📄 offline.html    # PWA offline page
+   ├── � Rcss/
+   │   └── 🎨 styles.css      # Complete styling system
+   ├── 📁 js/
+   │   ├── ⚡ script.js       # Main application logic
+   │   └── 🔐 auth.js         # Authentication system
+   ├── 📁 assets/
+   │   └── 🖼️ logo-6.jpeg     # Application logo
+   ├── 📄 manifest.json       # PWA manifest
+   ├── 📄 sw.js              # Service worker
    └── 📖 README.md           # This documentation
    ```
 
@@ -219,36 +259,45 @@ To create safer, better-maintained cities through community engagement and trans
 
 ### 📝 **Reporting New Issues**
 
-1. **📍 Set Your Location**
+1. **�  Login/Register**
+   ```
+   �  Email: your@email.com
+   🔒 Password: ********
+   🚀 [Login] or [Register]
+   ```
+
+2. **📍 Set Your Location**
    ```
    📍 Current Location: Getting your location...
    🎯 [Update Location] ← Click if location is incorrect
    ```
 
-2. **🏷️ Select Issue Type**
+3. **🏷️ Select Issue Type**
    - Choose from 6 categories:
      - 🛣️ **Pothole**: Road surface damage
      - 💧 **Water Leak**: Pipe bursts or leaks
-     - 🚦 **Traffic Light**: Malfunctioning signals
+     - � * *Traffic Light**: Malfunctioning signals
      - 💡 **Street Light**: Broken or dim lighting
      - 🕳️ **Drainage**: Blocked drains or flooding
      - 🔧 **Other**: Miscellaneous infrastructure issues
 
-3. **📸 Add Evidence**
+4. **📸 Add Evidence**
    ```
    📸 [Take Photo] ← Direct camera access
    🖼️ Photo preview with ❌ remove option
    ```
 
-4. **📝 Provide Details** (Optional)
+5. **📝 Provide Details** (Optional)
    ```
    💬 Description: "Large pothole causing vehicle damage..."
    ```
 
-5. **🚀 Submit Report**
+6. **🚀 Submit Report**
    ```
    ✅ Report Submitted!
    📋 Report ID: #1234567890
+   📧 Email notification sent
+   📱 [Share on WhatsApp]
    ```
 
 ### 📊 **Community Dashboard**
@@ -263,6 +312,34 @@ To create safer, better-maintained cities through community engagement and trans
    - Most upvoted reports
    - Recent submissions
    - Status progression tracking
+
+3. **🔍 Search & Filter**
+   ```
+   🔍 Search: "pothole main street"
+   📍 Real-time filtering with visual feedback
+   🎯 Instant results with highlighted matches
+   ```
+
+### 👤 **User Profile Management**
+
+1. **📊 Personal Statistics**
+   ```
+   📋 Reports Submitted: 15
+   👍 Upvotes Received: 47
+   📅 Member Since: January 2024
+   ```
+
+2. **📄 Export Reports**
+   ```
+   📄 [Export PDF] ← Generate professional report
+   🖨️ Print-friendly format with all your data
+   ```
+
+3. **🏙️ City Management**
+   ```
+   📍 Current City: Johannesburg
+   🔄 [Change City] ← Switch to different location
+   ```
 
 ### 🌙 **Theme Customization**
 
@@ -283,38 +360,67 @@ To create safer, better-maintained cities through community engagement and trans
 ```
 📁 SafeCityWeb/
 │
-├── 📄 index.html                 # 🏠 Main Application Entry Point
-│   ├── 🎯 Header Navigation      # Logo, menu, theme toggle
-│   ├── 🗺️ Map Section           # Interactive issue visualization
-│   ├── 📝 Report Section        # Issue submission form
-│   ├── 📊 Stats Section         # Community dashboard
-│   ├── ✅ Success Modal         # Report confirmation
-│   └── ⏳ Loading Overlay       # User feedback during submission
+├── 📄 index.html                 # 🏠 Landing Page
+│   ├── 🎯 Hero Section          # Welcome and app introduction
+│   ├── ✨ Features Overview     # Key functionality highlights
+│   └── � Get St arted Button    # Navigate to main app
 │
-├── 🎨 styles.css                # 💄 Complete Styling System
-│   ├── 📄 CSS Reset & Base      # Normalize browser defaults
-│   ├── 🎨 Theme Variables       # Light/Dark mode color schemes
-│   ├── 📱 Responsive Design     # Mobile-first approach
-│   ├── 🎭 Component Styles      # Modular CSS architecture
-│   ├── 🎬 Animations & Effects  # Smooth transitions & interactions
-│   └── ♿ Accessibility         # Focus states & ARIA support
+├── �  pages/
+│   ├── 📄 dashboard.html        # 🏠 Main Application
+│   │   ├── 🎯 Header Navigation # Logo, menu, theme toggle, user info
+│   │   ├── 🗺️ Map Section      # Interactive issue visualization
+│   │   ├── � Reeport Section   # Issue submission form
+│   │   ├── 📊 Stats Section    # Community dashboard
+│   │   ├── 👤 Profile Section  # User dashboard and PDF export
+│   │   ├── ✅ Success Modal    # Report confirmation
+│   │   ├── �️ Citny Modal       # City selection
+│   │   └── ⏳ Loading Overlay  # User feedback during operations
+│   └── 📄 offline.html         # 📱 PWA offline page
 │
-├── ⚡ script.js                 # 🧠 Application Logic & Interactions
-│   ├── 🗃️ App State Management  # Centralized data handling
-│   ├── 🧭 Navigation System     # Section switching logic
-│   ├── 📍 Geolocation Handler   # GPS & location services
-│   ├── 📸 Photo Upload System   # Camera integration
-│   ├── 💾 Data Persistence      # Local storage management
-│   ├── 🗺️ Map Interactions      # Marker management & filtering
-│   ├── 📊 Statistics Calculator # Real-time metrics
-│   ├── 🌙 Theme Management      # Dark/Light mode controller
-│   ├── ⚠️ Error Handling        # Graceful failure management
-│   └── 🚀 Performance Utilities # Optimization functions
+├── 📁 css/
+│   └── 🎨 styles.css           # 💄 Complete Styling System
+│       ├── 📄 CSS Reset & Base # Normalize browser defaults
+│       ├── 🎨 Theme Variables  # Light/Dark mode color schemes
+│       ├── �  Responsive Design# Mobile-first approach
+│       ├── 🎭 Component Styles # Modular CSS architecture
+│       ├── 🎬 Animations       # Smooth transitions & interactions
+│       ├── 👤 Profile Styles   # User dashboard styling
+│       └── ♿ Accessibility    # Focus states & ARIA support
 │
-├── 🖼️ logo.jpeg                 # 🎨 Application Branding
-│   └── 📏 Dimensions: 60x60px   # Optimized for header display
+├── 📁 js/
+│   ├── ⚡ script.js            # 🧠 Main Application Logic
+│   │   ├── �️ Apop State       # Centralized data handling
+│   │   ├── 🧭 Navigation       # Section switching logic
+│   │   ├── 📍 Geolocation      # GPS & location services
+│   │   ├── � Pchoto Upload     # Camera integration
+│   │   ├── 💾 Data Persistence # Database & local storage
+│   │   ├── 🗺️ Map Interactions # Marker management & filtering
+│   │   ├── 🔍 Search System    # Real-time search functionality
+│   │   ├── 📊 Statistics       # Real-time metrics
+│   │   ├── 🌙 Theme Management # Dark/Light mode controller
+│   │   ├── 📄 PDF Export       # Report generation
+│   │   ├── 📧 Notifications    # Email & WhatsApp integration
+│   │   ├── 📱 PWA Features     # Service worker integration
+│   │   └── ⚠️ Error Handling   # Graceful failure management
+│   └── 🔐 auth.js              # 🔒 Authentication System
+│       ├── 👤 User Management  # Login/register functionality
+│       ├── 🔑 Session Handling # Token management
+│       └── 🗃️ Supabase Integration # Database authentication
 │
-└── 📖 README.md                 # 📚 Complete Documentation
+├── 📁 assets/
+│   └── 🖼️ logo-6.jpeg          # 🎨 Application Branding
+│
+├── 📄 manifest.json            # 📱 PWA Configuration
+│   ├── 📱 App Metadata         # Name, description, icons
+│   ├── 🎨 Theme Colors         # Status bar and theme colors
+│   └── 📲 Installation Config  # Display mode and orientation
+│
+├── 📄 sw.js                    # 🔄 Service Worker
+│   ├── 📦 Cache Management     # Offline resource caching
+│   ├── 🔄 Background Sync      # Data synchronization
+│   └── 📱 PWA Functionality    # App-like behavior
+│
+└── 📖 README.md                # 📚 Complete Documentation
     └── 📋 This comprehensive guide
 ```
 
@@ -594,100 +700,184 @@ const themeManager = {
 
 ## 🔧 API Integration
 
-### 📡 **Current Implementation**
+### �️ *C*Database Integration**
 
-The application currently uses **local data simulation** with sample reports for demonstration purposes. Here's the current architecture:
+The application uses **Supabase** as the backend database with real-time functionality and user authentication.
 
-#### **📊 Sample Data Structure**
-```javascript
-const sampleReports = [
-    {
-        id: 1001,                           // 🆔 Unique identifier
-        type: 'pothole',                    // 🏷️ Issue category  
-        location: {                         // 📍 Geographic data
-            lat: -26.2041,
-            lng: 28.0473,
-            address: 'Main Road, Sandton'
-        },
-        description: 'Large pothole...',    // 📝 User description
-        photo: null,                        // 📸 Image data (base64)
-        upvotes: 45,                        // 👍 Community support
-        status: 'new',                      // 🏷️ Processing stage
-        date: new Date()                    // ⏰ Submission timestamp
-    }
-];
+#### **📊 Database Schema**
+```sql
+-- Users table (managed by Supabase Auth)
+CREATE TABLE auth.users (
+    id UUID PRIMARY KEY,
+    email VARCHAR UNIQUE,
+    created_at TIMESTAMP
+);
+
+-- Reports table
+CREATE TABLE reports (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id),
+    user_email VARCHAR,
+    type VARCHAR NOT NULL,
+    location JSONB NOT NULL,
+    description TEXT,
+    photo_url TEXT,
+    upvotes INTEGER DEFAULT 0,
+    status VARCHAR DEFAULT 'new',
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- User statistics view
+CREATE VIEW user_stats AS
+SELECT 
+    user_id,
+    COUNT(*) as total_reports,
+    SUM(upvotes) as total_upvotes,
+    MIN(created_at) as member_since
+FROM reports 
+GROUP BY user_id;
 ```
 
-### 🚀 **Future API Integration Points**
+### � **Cururent API Implementation**
 
-#### **🌐 RESTful Endpoints** (Planned)
+#### **🗃️ Supabase Integration**
 ```javascript
+// Initialize Supabase client
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // 📤 Submit New Report
-POST /api/reports
-Content-Type: application/json
-{
-    "type": "pothole",
-    "location": {"lat": -26.2041, "lng": 28.0473},
-    "description": "Large pothole causing issues",
-    "photo": "data:image/jpeg;base64,..."
+async function submitReport(reportData) {
+    const { data, error } = await supabase
+        .from('reports')
+        .insert([{
+            user_id: user.id,
+            user_email: user.email,
+            type: reportData.type,
+            location: reportData.location,
+            description: reportData.description,
+            photo_url: reportData.photo
+        }]);
+    return { data, error };
 }
 
-// 📥 Fetch Reports
-GET /api/reports?filter=all&limit=50&offset=0
-Response: {
-    "reports": [...],
-    "total": 247,
-    "page": 1
+// � Fetch nReports with Real-time Updates
+async function getReports() {
+    const { data, error } = await supabase
+        .from('reports')
+        .select('*')
+        .order('created_at', { ascending: false });
+    return { data, error };
 }
 
-// 👍 Vote on Report  
-POST /api/reports/1001/vote
-Response: {"upvotes": 46, "success": true}
+// 👍 Update Report Upvotes
+async function upvoteReport(reportId) {
+    const { data, error } = await supabase
+        .rpc('increment_upvotes', { report_id: reportId });
+    return { data, error };
+}
 
-// 📊 Get Statistics
-GET /api/stats
-Response: {
-    "totalReports": 247,
-    "resolvedIssues": 89,
-    "averageFixTime": 12,
-    "activeUsers": 1234
+// � Get  User Statistics
+async function fetchUserStatistics() {
+    const { data, error } = await supabase
+        .from('user_stats')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+    return { data, error };
 }
 ```
 
-#### **🔌 Integration Ready Functions**
+#### **🔐 Authentication System**
 ```javascript
-// 🚀 API Service Layer (Ready for Implementation)
-const apiService = {
-    async submitReport(reportData) {
-        // Current: Local simulation
-        // Future: HTTP POST to backend
-        return new Promise(resolve => {
-            setTimeout(() => resolve({id: Date.now()}), 2000);
-        });
-    },
-    
-    async getReports(filters = {}) {
-        // Current: Return sample data
-        // Future: HTTP GET with query parameters
-        return sampleReports.filter(/* filtering logic */);
-    },
-    
-    async updateReportStatus(reportId, status) {
-        // Future: PATCH /api/reports/:id
-        console.log(`Updating report ${reportId} to ${status}`);
+// 🔑 User Registration
+async function registerUser(email, password, userData) {
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                first_name: userData.firstName,
+                last_name: userData.lastName,
+                city: userData.city
+            }
+        }
+    });
+    return { data, error };
+}
+
+// 🔓 User Login
+async function loginUser(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+    });
+    return { data, error };
+}
+
+// 📊 Session Management
+supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN') {
+        handleUserLogin(session.user);
+    } else if (event === 'SIGNED_OUT') {
+        handleUserLogout();
     }
-};
+});
 ```
 
-### 🔮 **Recommended Backend Technologies**
+### � ***Notification Systems**
 
-| Technology | Purpose | Benefits |
-|------------|---------|----------|
-| **🚀 Node.js + Express** | API Server | Fast development, JavaScript consistency |
-| **🐘 PostgreSQL + PostGIS** | Database + GIS | Geospatial queries, robust data handling |
-| **☁️ AWS/Google Cloud** | Hosting & Storage | Scalable infrastructure, image storage |
-| **🔐 Auth0/Firebase Auth** | Authentication | Secure user management |
-| **📧 SendGrid/Mailgun** | Notifications | Email alerts to authorities |
+#### **📧 EmailJS Integration**
+```javascript
+// Initialize EmailJS
+emailjs.init("YOUR_PUBLIC_KEY");
+
+// Send notification email
+async function sendNotificationEmail(reportData) {
+    const templateParams = {
+        user_name: user.name,
+        user_email: user.email,
+        report_type: reportData.type,
+        report_location: reportData.location.address,
+        report_description: reportData.description,
+        report_id: reportData.id
+    };
+    
+    return await emailjs.send(
+        'YOUR_SERVICE_ID',
+        'YOUR_TEMPLATE_ID',
+        templateParams
+    );
+}
+```
+
+#### **📱 WhatsApp Integration**
+```javascript
+// Generate WhatsApp share link
+function generateWhatsAppLink(reportData) {
+    const message = `🚨 New Infrastructure Issue Reported!
+    
+📍 Location: ${reportData.location.address}
+🏷️ Type: ${reportData.type}
+📝 Description: ${reportData.description}
+🆔 Report ID: #${reportData.id}
+
+Help make our community better! 🌟`;
+    
+    const encodedMessage = encodeURIComponent(message);
+    return `https://wa.me/?text=${encodedMessage}`;
+}
+```
+
+### 🛠️ **Technology Stack Summary**
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **🗃️ Database** | Supabase PostgreSQL | Real-time data storage |
+| **🔐 Authentication** | Supabase Auth | User management |
+| **📧 Email** | EmailJS | Automated notifications |
+| **📱 PWA** | Service Worker | Offline functionality |
+| **📄 PDF Export** | Browser Print API | Report generation |
+| **🔍 Search** | JavaScript | Real-time filtering |
 
 ---
 
@@ -789,15 +979,26 @@ Add screenshots for UI changes
 
 We're always looking for ways to improve SafeCity! Here are some areas where we'd love community input:
 
+#### **✅ Recently Implemented Features**
+- **🗃️ Database Integration**: Full Supabase backend with real-time updates
+- **� Uoser Authentication**: Secure login/register system
+- **👤 User Profiles**: Personal dashboards with statistics
+- **� PDF yExport**: Professional report generation
+- **� Rueal-time Search**: Instant filtering with visual feedback
+- **📧 Email Notifications**: Automated alerts via EmailJS
+- **📱 WhatsApp Integration**: Social sharing functionality
+- **� PWA iSupport**: Offline mode and app installation
+- **🏙️ Multi-city Support**: Switch between different locations
+
 #### **🔮 Upcoming Features**
 - **🌍 Multi-language Support**: Zulu, Afrikaans, Sotho translations
-- **📱 Mobile App**: Native iOS/Android applications
+- **📱 Native Mobile Apps**: iOS/Android applications
 - **🤖 AI Classification**: Automatic issue categorization from photos
 - **📊 Analytics Dashboard**: Advanced reporting for city officials
-- **🔔 Push Notifications**: Real-time updates on report status
+- **🔔 Push Notifications**: Real-time status updates
 - **🎮 Gamification**: Points and badges for active community members
-- **🤝 Integration**: Connect with City of Johannesburg systems
-- **📍 Offline Mode**: Report issues without internet connection
+- **🤝 Government Integration**: Connect with City of Johannesburg systems
+- **📍 Enhanced Offline Mode**: Full offline report creation
 
 #### **🎯 Community Initiatives**
 - **🏫 Educational Outreach**: School and community workshops
