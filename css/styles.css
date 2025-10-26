@@ -10,9 +10,11 @@
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         min-height: 100vh;
         color: #333;
-        overflow-x: hidden; /* Prevent horizontal scrolling */
+        overflow-x: hidden;
+        /* Prevent horizontal scrolling */
         width: 100%;
-        max-width: 100vw; /* Ensure body doesn't exceed viewport width */
+        max-width: 100vw;
+        /* Ensure body doesn't exceed viewport width */
     }
 
 
@@ -59,12 +61,12 @@
             margin-left: 10px;
             margin-top: 10px;
         }
-        
+
         .header {
             flex-direction: column;
             padding: 15px 10px;
         }
-        
+
         .header .container {
             width: 100%;
         }
@@ -96,7 +98,8 @@
         display: flex;
         align-items: center;
         gap: 15px;
-        flex-shrink: 0; /* Prevent shrinking */
+        flex-shrink: 0;
+        /* Prevent shrinking */
     }
 
     @media (max-width: 768px) {
@@ -104,20 +107,20 @@
             flex-direction: column;
             gap: 15px;
         }
-        
+
         .header-right {
             order: -1;
             align-self: flex-end;
             flex-wrap: wrap;
             justify-content: flex-end;
         }
-        
+
         .nav {
             width: 100%;
             justify-content: center;
         }
     }
-    
+
     .container {
         max-width: 1200px;
         margin: 0 auto;
@@ -1033,6 +1036,7 @@
             transform: translateY(-50px);
             opacity: 0;
         }
+
         to {
             transform: translateY(0);
             opacity: 1;
@@ -1108,77 +1112,77 @@
             flex-direction: column;
             gap: 15px;
         }
-        
+
         .nav {
             width: 100%;
             justify-content: center;
         }
-        
+
         .nav-btn {
             flex: 1;
             justify-content: center;
             padding: 12px 15px;
         }
-        
+
         .logo {
             text-align: center;
         }
-        
+
         .logo h1 {
             font-size: 1.5rem;
         }
-        
+
         .main {
             padding: 20px 10px;
         }
-        
+
         .map {
             height: 350px;
         }
-        
+
         .map-filters {
             justify-content: center;
         }
-        
+
         .stats-grid {
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         }
-        
+
         .stat-card {
             flex-direction: column;
             text-align: center;
             gap: 10px;
         }
-        
+
         .stat-info h3 {
             font-size: 1.5rem;
         }
-        
+
         .issue-grid {
             grid-template-columns: repeat(2, 1fr);
         }
-        
+
         .issue-type {
             padding: 15px;
         }
-        
+
         .location-info {
             flex-direction: column;
             gap: 10px;
             text-align: center;
         }
-        
+
         .issue-item {
             flex-direction: column;
             align-items: flex-start;
             gap: 10px;
         }
-        
+
         .issue-stats {
             align-self: stretch;
             justify-content: space-between;
         }
-        
+
         .legend-items {
             justify-content: center;
         }
@@ -1188,16 +1192,16 @@
         .issue-grid {
             grid-template-columns: 1fr;
         }
-        
+
         .stats-grid {
             grid-template-columns: 1fr;
         }
-        
+
         .modal-content {
             padding: 20px;
             margin: 20px;
         }
-        
+
         .report-container,
         .stats-container,
         .map-container,
@@ -1213,9 +1217,12 @@
     }
 
     @keyframes markerPulse {
-        0%, 100% {
+
+        0%,
+        100% {
             transform: scale(1);
         }
+
         50% {
             transform: scale(1.05);
         }
@@ -1257,6 +1264,7 @@
 
     /* Print Styles */
     @media print {
+
         .header,
         .nav,
         .btn-primary,
@@ -1266,15 +1274,15 @@
         .modal {
             display: none !important;
         }
-        
+
         body {
             background: white;
         }
-        
+
         .section {
             display: block !important;
         }
-        
+
         .map-container,
         .stats-container,
         .report-container,
@@ -1730,6 +1738,7 @@
             opacity: 0;
             transform: translateY(-10px) scale(0.95);
         }
+
         to {
             opacity: 1;
             transform: translateY(0) scale(1);
@@ -1776,6 +1785,7 @@
         0% {
             background-position: 200% 0;
         }
+
         100% {
             background-position: -200% 0;
         }
@@ -2302,11 +2312,11 @@
             /* Better touch feedback */
             -webkit-tap-highlight-color: transparent;
         }
-        
+
         .marker:active {
             transform: scale(0.95);
         }
-        
+
         .marker-info {
             min-width: 180px !important;
             font-size: 12px !important;
@@ -2319,26 +2329,26 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
             border-radius: 10px;
         }
-        
+
         .marker-info h4 {
             font-size: 13px !important;
             margin-bottom: 8px;
         }
-        
+
         .marker-info p {
             font-size: 11px !important;
             margin: 4px 0;
             line-height: 1.3;
         }
-        
+
         /* Ensure markers don't overlap map controls */
         .map-placeholder .sample-markers {
             padding: 10px;
             box-sizing: border-box;
         }
-        
+
         /* Better spacing for clustered markers */
-        .marker + .marker {
+        .marker+.marker {
             margin-top: 2px;
         }
     }
@@ -2508,17 +2518,17 @@
         .loading-overlay {
             backdrop-filter: blur(10px);
         }
-        
+
         .loading-spinner {
             padding: 0 20px;
             text-align: center;
         }
-        
+
         .loading-spinner i {
             font-size: 3.5rem;
             margin-bottom: 25px;
         }
-        
+
         .loading-spinner p {
             font-size: 16px;
             line-height: 1.4;
@@ -2532,47 +2542,48 @@
             padding: 20px 15px;
             font-size: 14px;
         }
-        
+
         .issue-type i {
             font-size: 24px;
             margin-bottom: 8px;
         }
-        
+
         .filter-btn {
             padding: 12px 16px;
             min-height: 44px;
             font-size: 14px;
         }
-        
+
         .nav-btn {
             min-height: 50px;
             font-size: 16px;
         }
-        
+
         .btn-primary,
         .btn-secondary {
             min-height: 50px;
             font-size: 16px;
             padding: 15px 25px;
         }
-        
+
         /* Better textarea for mobile */
         #description {
             min-height: 120px;
-            font-size: 16px; /* Prevents zoom on iOS */
+            font-size: 16px;
+            /* Prevents zoom on iOS */
             padding: 20px;
         }
-        
+
         /* Photo upload improvements */
         .photo-upload-btn {
             min-height: 150px;
             padding: 30px 20px;
         }
-        
+
         .photo-upload-btn i {
             font-size: 2.5rem;
         }
-        
+
         .photo-upload-btn span {
             font-size: 16px;
             margin-top: 15px;
@@ -2582,35 +2593,37 @@
     /* Map container mobile improvements */
     @media (max-width: 768px) {
         .map {
-            height: 400px; /* Increased for better mobile experience */
-            touch-action: pan-x pan-y; /* Enable touch scrolling */
+            height: 400px;
+            /* Increased for better mobile experience */
+            touch-action: pan-x pan-y;
+            /* Enable touch scrolling */
         }
-        
+
         .map-placeholder {
             padding: 15px;
         }
-        
+
         .map-filters {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             padding-bottom: 10px;
             margin-bottom: 10px;
         }
-        
+
         .map-filters::-webkit-scrollbar {
             height: 4px;
         }
-        
+
         .map-filters::-webkit-scrollbar-track {
             background: var(--legend-bg);
             border-radius: 2px;
         }
-        
+
         .map-filters::-webkit-scrollbar-thumb {
             background: #667eea;
             border-radius: 2px;
         }
-        
+
         /* Ensure filter buttons don't wrap */
         .filter-btn {
             flex-shrink: 0;
@@ -2625,20 +2638,20 @@
             max-width: calc(100% - 40px);
             padding: 25px;
         }
-        
+
         .success-icon {
             font-size: 4rem !important;
         }
-        
+
         .modal-header h2 {
             font-size: 24px;
         }
-        
+
         .modal-body p {
             font-size: 16px;
             line-height: 1.6;
         }
-        
+
         .report-id {
             font-size: 16px;
             padding: 15px;
@@ -2652,6 +2665,7 @@
             opacity: 0;
             transform: scale(0.5);
         }
+
         100% {
             opacity: 1;
             transform: scale(1);
@@ -2663,11 +2677,25 @@
     }
 
     /* Stagger animation for multiple markers */
-    .marker:nth-child(1) { animation-delay: 0.1s; }
-    .marker:nth-child(2) { animation-delay: 0.2s; }
-    .marker:nth-child(3) { animation-delay: 0.3s; }
-    .marker:nth-child(4) { animation-delay: 0.4s; }
-    .marker:nth-child(5) { animation-delay: 0.5s; }
+    .marker:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .marker:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .marker:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .marker:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .marker:nth-child(5) {
+        animation-delay: 0.5s;
+    }
 
     /* Performance optimizations */
     .marker {
@@ -2685,12 +2713,12 @@
             height: 30px !important;
             font-size: 12px;
         }
-        
+
         .marker-info {
             min-width: 150px !important;
             font-size: 11px !important;
         }
-        
+
         .mobile-modal-content {
             padding: 20px 15px;
         }
@@ -2701,7 +2729,7 @@
         .mobile-issue-modal {
             background: rgba(0, 0, 0, 0.8);
         }
-        
+
         .mobile-modal-close:hover {
             background: rgba(255, 255, 255, 0.1);
         }
@@ -2714,7 +2742,7 @@
             height: 20px !important;
             font-size: 10px !important;
         }
-        
+
         .marker-info {
             display: none !important;
         }
@@ -2742,258 +2770,266 @@
         border-color: #8e44ad;
         background: linear-gradient(135deg, #8e44ad, #6c5ce7);
         color: white;
-    }/*
+    }
+
+    /*
  ===== PWA STYLES ===== */
 
-/* PWA Install Button */
-.pwa-install-btn {
-    background: linear-gradient(135deg, #26de81, #20bf6b);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(38, 222, 129, 0.3);
-}
+    /* PWA Install Button */
+    .pwa-install-btn {
+        background: linear-gradient(135deg, #26de81, #20bf6b);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(38, 222, 129, 0.3);
+    }
 
-.pwa-install-btn:hover {
-    background: linear-gradient(135deg, #20bf6b, #26de81);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(38, 222, 129, 0.4);
-}
+    .pwa-install-btn:hover {
+        background: linear-gradient(135deg, #20bf6b, #26de81);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(38, 222, 129, 0.4);
+    }
 
-.pwa-install-btn i {
-    font-size: 0.9rem;
-}
+    .pwa-install-btn i {
+        font-size: 0.9rem;
+    }
 
-/* PWA Notifications */
-.pwa-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    z-index: 10000;
-    transform: translateX(400px);
-    opacity: 0;
-    transition: all 0.3s ease;
-    max-width: 350px;
-}
+    /* PWA Notifications */
+    .pwa-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        transform: translateX(400px);
+        opacity: 0;
+        transition: all 0.3s ease;
+        max-width: 350px;
+    }
 
-.pwa-notification.show {
-    transform: translateX(0);
-    opacity: 1;
-}
-
-.pwa-notification.update-available {
-    border-left: 4px solid #ffa502;
-}
-
-.pwa-notification.install-success {
-    border-left: 4px solid #26de81;
-}
-
-.pwa-notification.sync-complete {
-    border-left: 4px solid #667eea;
-}
-
-.notification-content {
-    padding: 15px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.notification-content i {
-    font-size: 1.2rem;
-    flex-shrink: 0;
-}
-
-.pwa-notification.update-available i {
-    color: #ffa502;
-}
-
-.pwa-notification.install-success i {
-    color: #26de81;
-}
-
-.pwa-notification.sync-complete i {
-    color: #667eea;
-}
-
-.notification-content span {
-    flex: 1;
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.btn-small {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    background: #667eea;
-    color: white;
-    margin-left: 5px;
-}
-
-.btn-small:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-}
-
-.btn-small.btn-secondary {
-    background: transparent;
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-}
-
-.btn-small.btn-secondary:hover {
-    background: var(--legend-bg);
-    color: var(--text-primary);
-}
-
-/* Connection Status Indicator */
-.connection-status {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    z-index: 9999;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.connection-status.online {
-    background: linear-gradient(135deg, #26de81, #20bf6b);
-    color: white;
-}
-
-.connection-status.offline {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    color: white;
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
+    .pwa-notification.show {
+        transform: translateX(0);
         opacity: 1;
     }
-    50% {
-        opacity: 0.7;
-    }
-}
 
-/* PWA Splash Screen Styles */
-@media (display-mode: standalone) {
-    body {
-        -webkit-user-select: none;
-        -webkit-touch-callout: none;
+    .pwa-notification.update-available {
+        border-left: 4px solid #ffa502;
     }
-    
-    .header {
-        padding-top: env(safe-area-inset-top);
-    }
-    
-    .main {
-        padding-bottom: env(safe-area-inset-bottom);
-    }
-}
 
-/* PWA Mobile Optimizations */
-@media (max-width: 768px) {
-    .pwa-install-btn {
+    .pwa-notification.install-success {
+        border-left: 4px solid #26de81;
+    }
+
+    .pwa-notification.sync-complete {
+        border-left: 4px solid #667eea;
+    }
+
+    .notification-content {
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .notification-content i {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .pwa-notification.update-available i {
+        color: #ffa502;
+    }
+
+    .pwa-notification.install-success i {
+        color: #26de81;
+    }
+
+    .pwa-notification.sync-complete i {
+        color: #667eea;
+    }
+
+    .notification-content span {
+        flex: 1;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .btn-small {
         padding: 6px 12px;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
         font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        background: #667eea;
+        color: white;
+        margin-left: 5px;
     }
-    
-    .pwa-notification {
-        right: 10px;
-        left: 10px;
-        max-width: none;
-        transform: translateY(-100px);
+
+    .btn-small:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     }
-    
-    .pwa-notification.show {
-        transform: translateY(0);
+
+    .btn-small.btn-secondary {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border-color);
     }
-    
+
+    .btn-small.btn-secondary:hover {
+        background: var(--legend-bg);
+        color: var(--text-primary);
+    }
+
+    /* Connection Status Indicator */
     .connection-status {
-        bottom: 10px;
-        left: 10px;
-        font-size: 0.8rem;
-        padding: 6px 12px;
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        z-index: 9999;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
-}
 
-/* Offline Mode Styles */
-.offline-indicator {
-    background: rgba(255, 107, 107, 0.1);
-    border: 1px solid #ff6b6b;
-    color: #c0392b;
-    padding: 10px 15px;
-    border-radius: 8px;
-    margin: 10px 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.9rem;
-}
+    .connection-status.online {
+        background: linear-gradient(135deg, #26de81, #20bf6b);
+        color: white;
+    }
 
-.offline-indicator i {
-    color: #ff6b6b;
-}
+    .connection-status.offline {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        animation: pulse 2s ease-in-out infinite;
+    }
 
-.offline-queue-count {
-    background: #ff6b6b;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    margin-left: auto;
-}
+    @keyframes pulse {
 
-/* PWA Dark Mode Support */
-[data-theme="dark"] .pwa-notification {
-    background: var(--card-bg);
-    border-color: var(--border-color);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-}
+        0%,
+        100% {
+            opacity: 1;
+        }
 
-[data-theme="dark"] .notification-content span {
-    color: var(--text-primary);
-}
+        50% {
+            opacity: 0.7;
+        }
+    }
 
-[data-theme="dark"] .btn-small.btn-secondary {
-    color: var(--text-secondary);
-    border-color: var(--border-color);
-}
+    /* PWA Splash Screen Styles */
+    @media (display-mode: standalone) {
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
 
-[data-theme="dark"] .btn-small.btn-secondary:hover {
-    background: var(--legend-bg);
-    color: var(--text-primary);
-}
+        .header {
+            padding-top: env(safe-area-inset-top);
+        }
 
-[data-theme="dark"] .offline-indicator {
-    background: rgba(255, 107, 107, 0.2);
-    border-color: #ff6b6b;
-    color: #ff6b6b;
-}
+        .main {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    }
+
+    /* PWA Mobile Optimizations */
+    @media (max-width: 768px) {
+        .pwa-install-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .pwa-notification {
+            right: 10px;
+            left: 10px;
+            max-width: none;
+            transform: translateY(-100px);
+        }
+
+        .pwa-notification.show {
+            transform: translateY(0);
+        }
+
+        .connection-status {
+            bottom: 10px;
+            left: 10px;
+            font-size: 0.8rem;
+            padding: 6px 12px;
+        }
+    }
+
+    /* Offline Mode Styles */
+    .offline-indicator {
+        background: rgba(255, 107, 107, 0.1);
+        border: 1px solid #ff6b6b;
+        color: #c0392b;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+    }
+
+    .offline-indicator i {
+        color: #ff6b6b;
+    }
+
+    .offline-queue-count {
+        background: #ff6b6b;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        margin-left: auto;
+    }
+
+    /* PWA Dark Mode Support */
+    [data-theme="dark"] .pwa-notification {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="dark"] .notification-content span {
+        color: var(--text-primary);
+    }
+
+    [data-theme="dark"] .btn-small.btn-secondary {
+        color: var(--text-secondary);
+        border-color: var(--border-color);
+    }
+
+    [data-theme="dark"] .btn-small.btn-secondary:hover {
+        background: var(--legend-bg);
+        color: var(--text-primary);
+    }
+
+    [data-theme="dark"] .offline-indicator {
+        background: rgba(255, 107, 107, 0.2);
+        border-color: #ff6b6b;
+        color: #ff6b6b;
+    }
