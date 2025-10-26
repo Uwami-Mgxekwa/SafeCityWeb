@@ -254,6 +254,58 @@ function updateUserReportsList(userReports) {
                 <p>Help make your community better by reporting infrastructure issues!</p>
             </div>
         `;
+        
+        // TEMPORARY: Create sample reports for testing PDF export
+        console.log('🧪 No reports found, creating sample data for testing');
+        const sampleReports = [
+            {
+                id: 'sample-1',
+                type: 'pothole',
+                location: { address: 'Main Street, Your City' },
+                description: 'Large pothole causing traffic issues',
+                date: new Date().toISOString(),
+                status: 'new',
+                upvotes: 5
+            },
+            {
+                id: 'sample-2', 
+                type: 'streetlight',
+                location: { address: 'Park Avenue, Your City' },
+                description: 'Street light not working',
+                date: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+                status: 'acknowledged',
+                upvotes: 3
+            }
+        ];
+        
+        // Add sample reports to the list for testing
+        sampleReports.forEach(report => {
+            const reportItem = document.createElement('div');
+            reportItem.className = 'user-report-item';
+            reportItem.innerHTML = `
+                <div class="report-icon">
+                    <i class="${getIssueTypeIcon(report.type)}"></i>
+                </div>
+                <div class="report-details">
+                    <h4>${formatReportTitle(report)}</h4>
+                    <p>${report.location.address}</p>
+                    <div class="report-meta">
+                        <span class="report-date">
+                            <i class="fas fa-clock"></i> ${formatDate(report.date)}
+                        </span>
+                        <span class="report-upvotes">
+                            <i class="fas fa-arrow-up"></i> ${report.upvotes}
+                        </span>
+                        <span class="report-status ${report.status}">
+                            ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                        </span>
+                    </div>
+                </div>
+            `;
+            userReportsList.appendChild(reportItem);
+        });
+        
+        updateExportButtonVisibility();
         return;
     }
 
@@ -297,6 +349,9 @@ function updateUserReportsList(userReports) {
         showMoreBtn.onclick = () => showAllUserReports(sortedReports);
         userReportsList.appendChild(showMoreBtn);
     }
+
+    // Update export button visibility
+    updateExportButtonVisibility();
 }
 
 // Show all user reports
@@ -339,6 +394,9 @@ function showAllUserReports(allReports) {
     showLessBtn.innerHTML = `<i class="fas fa-minus"></i> Show Less`;
     showLessBtn.onclick = () => updateUserReportsList(allReports);
     userReportsList.appendChild(showLessBtn);
+
+    // Update export button visibility
+    updateExportButtonVisibility();
 }
 
 // Enhanced marker positioning
@@ -2268,37 +2326,37 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 // ===== TESTING FUNCTIONS =====
 
-    // Test email notification manually
-    window.testEmailNotification = async function() {
-        console.log('🧪 Testing email notification...');
+// Test email notification manually
+window.testEmailNotification = async function () {
+    console.log('🧪 Testing email notification...');
 
-        if (!appState.user) {
-            console.error('❌ No user logged in. Please log in first.');
-            return;
-        }
+    if (!appState.user) {
+        console.error('❌ No user logged in. Please log in first.');
+        return;
+    }
 
-        const testReport = {
-            id: 'TEST123',
-            type: 'pothole',
-            location: { address: 'Test Street, Test City' },
-            description: 'This is a test report',
-            status: 'new'
-        };
-
-        try {
-            const result = await sendEmailNotification('report_submitted', appState.user, testReport);
-            if (result) {
-                console.log('✅ Test email sent successfully!');
-                alert('✅ Test email sent! Check your inbox.');
-            } else {
-                console.log('❌ Test email failed');
-                alert('❌ Test email failed. Check console for details.');
-            }
-        } catch (error) {
-            console.error('❌ Test email error:', error);
-            alert('❌ Test email error: ' + error.message);
-        }
+    const testReport = {
+        id: 'TEST123',
+        type: 'pothole',
+        location: { address: 'Test Street, Test City' },
+        description: 'This is a test report',
+        status: 'new'
     };
+
+    try {
+        const result = await sendEmailNotification('report_submitted', appState.user, testReport);
+        if (result) {
+            console.log('✅ Test email sent successfully!');
+            alert('✅ Test email sent! Check your inbox.');
+        } else {
+            console.log('❌ Test email failed');
+            alert('❌ Test email failed. Check console for details.');
+        }
+    } catch (error) {
+        console.error('❌ Test email error:', error);
+        alert('❌ Test email error: ' + error.message);
+    }
+};
 
 // Test WhatsApp notification manually
 window.testWhatsAppNotification = function () {
@@ -2361,9 +2419,9 @@ function initializeSearch() {
     if (!searchInput) return;
 
     // Search input event listener
-    searchInput.addEventListener('input', function(e) {
+    searchInput.addEventListener('input', function (e) {
         const query = e.target.value.trim();
-        
+
         // Show/hide clear button
         if (clearButton) {
             clearButton.style.display = query ? 'flex' : 'none';
@@ -2383,7 +2441,7 @@ function initializeSearch() {
 
     // Clear search
     if (clearButton) {
-        clearButton.addEventListener('click', function() {
+        clearButton.addEventListener('click', function () {
             searchInput.value = '';
             clearButton.style.display = 'none';
             hideSearchResults();
@@ -2393,14 +2451,14 @@ function initializeSearch() {
     }
 
     // Hide search results when clicking outside
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (!e.target.closest('.search-container')) {
             hideSearchResults();
         }
     });
 
     // Keyboard navigation
-    searchInput.addEventListener('keydown', function(e) {
+    searchInput.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             hideSearchResults();
             searchInput.blur();
@@ -2428,20 +2486,20 @@ function performSearch(query) {
 // Search through reports
 function searchReports(query) {
     const searchTerm = query.toLowerCase();
-    
+
     return appState.reports.filter(report => {
         // Search in description
         const descriptionMatch = report.description.toLowerCase().includes(searchTerm);
-        
+
         // Search in location
         const locationMatch = report.location?.address?.toLowerCase().includes(searchTerm);
-        
+
         // Search in type
         const typeMatch = report.type.toLowerCase().includes(searchTerm);
-        
+
         // Search in status
         const statusMatch = report.status.toLowerCase().includes(searchTerm);
-        
+
         // Search in report ID
         const idMatch = report.id.toString().includes(searchTerm);
 
@@ -2455,7 +2513,7 @@ function displaySearchResults(results) {
     if (!searchResults) return;
 
     searchResults.innerHTML = '';
-    
+
     results.slice(0, 8).forEach(report => { // Limit to 8 results
         const resultItem = createSearchResultItem(report);
         searchResults.appendChild(resultItem);
@@ -2477,22 +2535,22 @@ function displaySearchResults(results) {
 function createSearchResultItem(report) {
     const item = document.createElement('div');
     item.className = 'search-result-item';
-    
+
     const icon = document.createElement('div');
     icon.className = `search-result-icon ${report.type}`;
     icon.innerHTML = `<i class="${getIssueTypeIcon(report.type)}"></i>`;
-    
+
     const details = document.createElement('div');
     details.className = 'search-result-details';
-    
+
     const title = document.createElement('div');
     title.className = 'search-result-title';
     title.textContent = formatReportTitle(report);
-    
+
     const location = document.createElement('div');
     location.className = 'search-result-location';
     location.textContent = report.location?.address || 'Unknown location';
-    
+
     const meta = document.createElement('div');
     meta.className = 'search-result-meta';
     meta.innerHTML = `
@@ -2500,19 +2558,19 @@ function createSearchResultItem(report) {
         <span><i class="fas fa-arrow-up"></i> ${report.upvotes}</span>
         <span class="status ${report.status}">${report.status}</span>
     `;
-    
+
     details.appendChild(title);
     details.appendChild(location);
     details.appendChild(meta);
-    
+
     item.appendChild(icon);
     item.appendChild(details);
-    
+
     // Click handler
     item.addEventListener('click', () => {
         selectSearchResult(report);
     });
-    
+
     return item;
 }
 
@@ -2528,7 +2586,7 @@ function displayNoResults(query) {
             <small>Try searching by location, issue type, or description</small>
         </div>
     `;
-    
+
     searchResults.style.display = 'block';
 }
 
@@ -2543,12 +2601,12 @@ function hideSearchResults() {
 // Highlight search results on map
 function highlightSearchResults(results) {
     const markers = document.querySelectorAll('.marker');
-    
+
     // Hide all markers first
     markers.forEach(marker => {
         marker.style.display = 'none';
     });
-    
+
     // Show only matching markers
     results.forEach(report => {
         const marker = document.querySelector(`[data-report-id="${report.id}"]`);
@@ -2571,25 +2629,25 @@ function showAllMarkers() {
 // Select search result
 function selectSearchResult(report) {
     hideSearchResults();
-    
+
     // Find and highlight the marker
     const marker = document.querySelector(`[data-report-id="${report.id}"]`);
     if (marker) {
         // Scroll marker into view
         marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
+
         // Highlight the marker
         marker.style.transform = 'scale(1.3)';
         marker.style.zIndex = '1000';
         marker.style.boxShadow = '0 0 20px rgba(102, 126, 234, 0.8)';
-        
+
         // Show marker info
         const markerInfo = marker.querySelector('.marker-info');
         if (markerInfo) {
             markerInfo.style.opacity = '1';
             markerInfo.style.visibility = 'visible';
         }
-        
+
         // Reset highlight after 3 seconds
         setTimeout(() => {
             marker.style.transform = 'scale(1)';
@@ -2601,7 +2659,7 @@ function selectSearchResult(report) {
             }
         }, 3000);
     }
-    
+
     // Clear search
     const searchInput = document.getElementById('report-search');
     const clearButton = document.getElementById('clear-search');
@@ -2641,7 +2699,7 @@ function initializePWA() {
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
                 console.log('SafeCity PWA: Service Worker registered');
-                
+
                 // Listen for updates
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
@@ -2674,7 +2732,7 @@ function initializePWA() {
     });
 
     // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches || 
+    if (window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone === true) {
         isInstalled = true;
         console.log('SafeCity PWA: Running as installed app');
@@ -2692,7 +2750,7 @@ function initializePWA() {
     // Handle offline/online status
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     // Show initial connection status
     updateConnectionStatus();
 }
@@ -2707,14 +2765,14 @@ function showInstallButton() {
         installBtn.className = 'pwa-install-btn';
         installBtn.innerHTML = '<i class="fas fa-download"></i> Install App';
         installBtn.onclick = installPWA;
-        
+
         // Add to header
         const headerRight = document.querySelector('.header-right');
         if (headerRight) {
             headerRight.insertBefore(installBtn, headerRight.firstChild);
         }
     }
-    
+
     installBtn.style.display = 'flex';
 }
 
@@ -2736,16 +2794,16 @@ async function installPWA() {
     try {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        
+
         if (outcome === 'accepted') {
             console.log('SafeCity PWA: User accepted install');
         } else {
             console.log('SafeCity PWA: User dismissed install');
         }
-        
+
         deferredPrompt = null;
         hideInstallButton();
-        
+
     } catch (error) {
         console.error('SafeCity PWA: Install failed', error);
     }
@@ -2763,9 +2821,9 @@ function showUpdateAvailable() {
             <button onclick="this.parentElement.parentElement.remove()" class="btn-small btn-secondary">Later</button>
         </div>
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.classList.add('show');
     }, 100);
@@ -2782,13 +2840,13 @@ function showInstallSuccess() {
             <button onclick="this.parentElement.parentElement.remove()" class="btn-small">Great!</button>
         </div>
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.classList.add('show');
     }, 100);
-    
+
     // Auto-hide after 5 seconds
     setTimeout(() => {
         notification.remove();
@@ -2805,13 +2863,13 @@ function showSyncComplete() {
             <span>Offline reports synced!</span>
         </div>
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.classList.add('show');
     }, 100);
-    
+
     // Auto-hide after 3 seconds
     setTimeout(() => {
         notification.remove();
@@ -2822,7 +2880,7 @@ function showSyncComplete() {
 function handleOnline() {
     console.log('SafeCity PWA: Back online');
     updateConnectionStatus();
-    
+
     // Trigger background sync if available
     if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
         navigator.serviceWorker.ready.then(registration => {
@@ -2840,14 +2898,14 @@ function handleOffline() {
 // Update connection status indicator
 function updateConnectionStatus() {
     let statusIndicator = document.getElementById('connection-status');
-    
+
     if (!statusIndicator) {
         statusIndicator = document.createElement('div');
         statusIndicator.id = 'connection-status';
         statusIndicator.className = 'connection-status';
         document.body.appendChild(statusIndicator);
     }
-    
+
     if (navigator.onLine) {
         statusIndicator.className = 'connection-status online';
         statusIndicator.innerHTML = '<i class="fas fa-wifi"></i> Online';
@@ -2855,7 +2913,7 @@ function updateConnectionStatus() {
         statusIndicator.className = 'connection-status offline';
         statusIndicator.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline';
     }
-    
+
     // Auto-hide online status after 3 seconds
     if (navigator.onLine) {
         setTimeout(() => {
@@ -2900,8 +2958,332 @@ function getOfflineReportsCount() {
 }
 
 // Initialize PWA when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => {
         initializePWA();
     }, 1000);
-});
+});// =====PDF EXPORT FUNCTIONALITY =====
+
+// Initialize PDF export functionality
+function initializePDFExport() {
+    const exportBtn = document.getElementById('export-reports-btn');
+
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportUserReportsToPDF);
+    }
+}
+
+// Export user reports to PDF
+async function exportUserReportsToPDF() {
+    try {
+        if (!window.jsPDF) {
+            alert('PDF export library not loaded. Please refresh the page and try again.');
+            return;
+        }
+
+        if (!appState.user) {
+            alert('Please log in to export your reports.');
+            return;
+        }
+
+        const exportBtn = document.getElementById('export-reports-btn');
+        if (exportBtn) {
+            exportBtn.disabled = true;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+        }
+
+        // Get user's reports
+        let userReports = [];
+        try {
+            const userStats = await fetchUserStatistics();
+            userReports = userStats.userReports || [];
+        } catch (error) {
+            console.error('Error fetching user reports:', error);
+            // Fallback to local reports
+            userReports = appState.reports.filter(report =>
+                report.user_id === appState.user.id || report.user_email === appState.user.email
+            );
+        }
+
+        if (userReports.length === 0) {
+            alert('No reports found to export.');
+            return;
+        }
+
+        // Generate PDF
+        await generateReportsPDF(userReports);
+
+    } catch (error) {
+        console.error('Error exporting PDF:', error);
+        alert('Failed to export PDF. Please try again.');
+    } finally {
+        const exportBtn = document.getElementById('export-reports-btn');
+        if (exportBtn) {
+            exportBtn.disabled = false;
+            exportBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Export PDF';
+        }
+    }
+}
+
+// Generate PDF document
+async function generateReportsPDF(reports) {
+    const { jsPDF } = window.jsPDF;
+    const doc = new jsPDF();
+
+    // PDF Configuration
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const contentWidth = pageWidth - (margin * 2);
+    let yPosition = margin;
+
+    // Colors
+    const primaryColor = [102, 126, 234]; // #667eea
+    const secondaryColor = [118, 75, 162]; // #764ba2
+    const textColor = [51, 51, 51]; // #333
+    const lightGray = [128, 128, 128]; // #808080
+
+    // Helper function to add new page if needed
+    function checkPageBreak(requiredHeight) {
+        if (yPosition + requiredHeight > pageHeight - margin) {
+            doc.addPage();
+            yPosition = margin;
+            return true;
+        }
+        return false;
+    }
+
+    // Helper function to wrap text
+    function wrapText(text, maxWidth, fontSize = 10) {
+        doc.setFontSize(fontSize);
+        return doc.splitTextToSize(text, maxWidth);
+    }
+
+    // Header
+    doc.setFillColor(...primaryColor);
+    doc.rect(0, 0, pageWidth, 40, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SafeCity', margin, 25);
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Infrastructure Report Summary', margin, 35);
+
+    yPosition = 60;
+
+    // User Information
+    doc.setTextColor(...textColor);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Report Summary', margin, yPosition);
+    yPosition += 15;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated for: ${appState.user.first_name} ${appState.user.last_name}`, margin, yPosition);
+    yPosition += 8;
+    doc.text(`Email: ${appState.user.email}`, margin, yPosition);
+    yPosition += 8;
+    doc.text(`City: ${appState.userLocation?.displayName || 'Unknown'}`, margin, yPosition);
+    yPosition += 8;
+    doc.text(`Generated on: ${new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    })}`, margin, yPosition);
+    yPosition += 20;
+
+    // Statistics Summary
+    const totalReports = reports.length;
+    const totalUpvotes = reports.reduce((sum, report) => sum + (report.upvotes || 0), 0);
+    const statusCounts = reports.reduce((counts, report) => {
+        counts[report.status] = (counts[report.status] || 0) + 1;
+        return counts;
+    }, {});
+
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Statistics Overview', margin, yPosition);
+    yPosition += 15;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Total Reports: ${totalReports}`, margin, yPosition);
+    yPosition += 8;
+    doc.text(`Total Upvotes Received: ${totalUpvotes}`, margin, yPosition);
+    yPosition += 8;
+
+    // Status breakdown
+    Object.entries(statusCounts).forEach(([status, count]) => {
+        doc.text(`${status.charAt(0).toUpperCase() + status.slice(1)}: ${count}`, margin + 20, yPosition);
+        yPosition += 8;
+    });
+
+    yPosition += 10;
+
+    // Reports List
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detailed Reports', margin, yPosition);
+    yPosition += 15;
+
+    // Sort reports by date (newest first)
+    const sortedReports = reports.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    sortedReports.forEach((report, index) => {
+        checkPageBreak(60); // Minimum space needed for a report
+
+        // Report header
+        doc.setFillColor(245, 245, 245);
+        doc.rect(margin, yPosition - 5, contentWidth, 25, 'F');
+
+        doc.setTextColor(...primaryColor);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Report #${report.id}`, margin + 5, yPosition + 5);
+
+        doc.setTextColor(...textColor);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(formatReportTitle(report), margin + 5, yPosition + 15);
+
+        yPosition += 30;
+
+        // Report details
+        doc.setFontSize(9);
+        doc.text(`Date: ${formatDate(report.date)}`, margin + 5, yPosition);
+        yPosition += 7;
+
+        doc.text(`Location: ${report.location?.address || 'Unknown location'}`, margin + 5, yPosition);
+        yPosition += 7;
+
+        doc.text(`Status: ${report.status.charAt(0).toUpperCase() + report.status.slice(1)}`, margin + 5, yPosition);
+        yPosition += 7;
+
+        doc.text(`Upvotes: ${report.upvotes || 0}`, margin + 5, yPosition);
+        yPosition += 7;
+
+        // Description
+        if (report.description && report.description.trim()) {
+            doc.text('Description:', margin + 5, yPosition);
+            yPosition += 7;
+
+            const wrappedDescription = wrapText(report.description, contentWidth - 20, 9);
+            wrappedDescription.forEach(line => {
+                checkPageBreak(10);
+                doc.text(line, margin + 10, yPosition);
+                yPosition += 7;
+            });
+        }
+
+        yPosition += 10;
+
+        // Add separator line
+        if (index < sortedReports.length - 1) {
+            doc.setDrawColor(...lightGray);
+            doc.line(margin, yPosition, pageWidth - margin, yPosition);
+            yPosition += 15;
+        }
+    });
+
+    // Footer on last page
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setTextColor(...lightGray);
+        doc.setFontSize(8);
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 30, pageHeight - 10);
+        doc.text('Generated by SafeCity', margin, pageHeight - 10);
+    }
+
+    // Generate filename
+    const fileName = `SafeCity_Reports_${appState.user.first_name}_${appState.user.last_name}_${new Date().toISOString().split('T')[0]}.pdf`;
+
+    // Save the PDF
+    doc.save(fileName);
+
+    console.log(`PDF exported: ${fileName}`);
+}
+
+// Show/hide export button based on reports availability
+function updateExportButtonVisibility() {
+    const exportBtn = document.getElementById('export-reports-btn');
+    const userReportsList = document.getElementById('user-reports-list');
+
+    console.log('🔍 Export button visibility check:');
+    console.log('Export button found:', !!exportBtn);
+    console.log('User reports list found:', !!userReportsList);
+
+    if (exportBtn && userReportsList) {
+        // Check if there are actual report items (not just loading message)
+        const reportItems = userReportsList.querySelectorAll('.user-report-item');
+        const hasReports = reportItems.length > 0;
+
+        console.log('Report items found:', reportItems.length);
+        console.log('Has reports:', hasReports);
+        console.log('Button display will be:', hasReports ? 'flex' : 'none');
+
+        // TEMPORARY: Always show export button for testing
+        exportBtn.style.display = 'flex';
+        console.log('🧪 TESTING MODE: Export button forced to show');
+    } else {
+        console.log('❌ Missing elements for export button visibility');
+    }
+}
+
+// Initialize PDF export when DOM is loaded
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(() => {
+        initializePDFExport();
+    }, 1000);
+});// ===== DEBUGGING FUNCTIONS =====
+
+    // Test export button visibility
+    window.testExportButton = function() {
+        console.log('🧪 Testing export button...');
+
+        const exportBtn = document.getElementById('export-reports-btn');
+        const userReportsList = document.getElementById('user-reports-list');
+
+        console.log('Export button element:', exportBtn);
+        console.log('User reports list element:', userReportsList);
+
+        if (exportBtn) {
+            console.log('Export button current display:', exportBtn.style.display);
+            console.log('Export button computed display:', window.getComputedStyle(exportBtn).display);
+
+            // Force show the button for testing
+            exportBtn.style.display = 'flex';
+            console.log('✅ Export button forced to show');
+        } else {
+            console.log('❌ Export button not found');
+        }
+
+        if (userReportsList) {
+            const reportItems = userReportsList.querySelectorAll('.user-report-item');
+            console.log('Report items in list:', reportItems.length);
+
+            reportItems.forEach((item, index) => {
+                console.log(`Report ${index + 1}:`, item.textContent.substring(0, 50) + '...');
+            });
+        }
+
+        // Test the visibility function
+        updateExportButtonVisibility();
+    };
+
+// Force show export button
+window.showExportButton = function () {
+    const exportBtn = document.getElementById('export-reports-btn');
+    if (exportBtn) {
+        exportBtn.style.display = 'flex';
+        console.log('✅ Export button is now visible');
+    } else {
+        console.log('❌ Export button not found');
+    }
+};

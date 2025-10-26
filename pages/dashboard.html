@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +8,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="../assets/logo-6.jpeg">
     <link rel="stylesheet" href="../css/styles.css">
-    
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="../manifest.json">
-    
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#667eea">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,6 +20,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="SafeCity">
 </head>
+
 <body>
     <!-- Header -->
     <header class="header">
@@ -29,7 +31,7 @@
                     <h1>SafeCity</h1>
                     <span class="tagline">Report. Track. Fix.</span>
                 </div>
-                
+
                 <nav class="nav">
                     <button class="nav-btn active" data-section="map">
                         <i class="fas fa-map"></i> Map
@@ -44,7 +46,7 @@
                         <i class="fas fa-user"></i> Profile
                     </button>
                 </nav>
-                
+
                 <div class="header-right">
                     <div class="user-info" id="user-info" style="display: none;">
                         <div class="user-avatar">
@@ -68,7 +70,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
                         <div class="toggle-track">
                             <div class="toggle-thumb">
@@ -94,19 +96,20 @@
                         <i class="fas fa-map-marker-alt"></i>
                         <span id="map-city-display">Loading location...</span>
                     </div>
-                    
+
                     <!-- Search Bar -->
                     <div class="search-container">
                         <div class="search-bar">
                             <i class="fas fa-search search-icon"></i>
-                            <input type="text" id="report-search" placeholder="Search reports by location, description, or type..." autocomplete="off">
+                            <input type="text" id="report-search"
+                                placeholder="Search reports by location, description, or type..." autocomplete="off">
                             <button class="clear-search" id="clear-search" style="display: none;">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                         <div class="search-results" id="search-results" style="display: none;"></div>
                     </div>
-                    
+
                     <div class="map-filters">
                         <button class="filter-btn active" data-filter="all">All Issues</button>
                         <button class="filter-btn" data-filter="pothole">Potholes</button>
@@ -129,7 +132,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Legend -->
             <div class="legend">
                 <h3>Legend</h3>
@@ -214,7 +217,8 @@
 
                     <div class="description-section">
                         <h3>Description (Optional)</h3>
-                        <textarea id="description" placeholder="Provide additional details about the issue..."></textarea>
+                        <textarea id="description"
+                            placeholder="Provide additional details about the issue..."></textarea>
                     </div>
 
                     <button class="btn-primary submit-btn" id="submit-report">
@@ -233,7 +237,7 @@
                     <i class="fas fa-map-marker-alt"></i>
                     <span id="stats-city-display">Loading city data...</span>
                 </div>
-                
+
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">
@@ -299,7 +303,7 @@
         <section id="profile-section" class="section">
             <div class="profile-container">
                 <h2>User Profile</h2>
-                
+
                 <div class="profile-content">
                     <div class="profile-header">
                         <div class="profile-avatar">
@@ -331,7 +335,12 @@
                     </div>
 
                     <div class="profile-reports">
-                        <h3>Your Recent Reports</h3>
+                        <div class="reports-header">
+                            <h3>Your Recent Reports</h3>
+                            <button class="btn-export" id="export-reports-btn" style="display: flex;">
+                                <i class="fas fa-file-pdf"></i> Export PDF
+                            </button>
+                        </div>
                         <div class="user-reports-list" id="user-reports-list">
                             <div class="loading-message">
                                 <i class="fas fa-spinner fa-spin"></i>
@@ -363,7 +372,8 @@
                 <h2>Report Submitted!</h2>
             </div>
             <div class="modal-body">
-                <p>Thank you for making your community better. Your report has been submitted and will be reviewed by local authorities.</p>
+                <p>Thank you for making your community better. Your report has been submitted and will be reviewed by
+                    local authorities.</p>
                 <div class="report-id">
                     <strong>Report ID: #<span id="report-id"></span></strong>
                 </div>
@@ -423,5 +433,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- EmailJS for free email notifications -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <!-- jsPDF for PDF export functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF for PDF export functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
+
 </html>

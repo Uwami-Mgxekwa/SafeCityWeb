@@ -1985,11 +1985,20 @@ body {
     margin-bottom: 30px;
 }
 
+.reports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
 .profile-reports h3 {
     font-size: 1.4rem;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 20px;
+    margin: 0;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -2001,6 +2010,39 @@ body {
     font-weight: 900;
     color: #667eea;
     font-size: 1.2rem;
+}
+
+.btn-export {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+
+.btn-export:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+.btn-export:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+}
+
+.btn-export i {
+    font-size: 0.9rem;
 }
 
 .user-reports-list {
@@ -2280,6 +2322,17 @@ body {
     .btn-secondary,
     .btn-danger {
         width: 100%;
+        justify-content: center;
+    }
+
+    .reports-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .btn-export {
+        align-self: stretch;
         justify-content: center;
     }
 }
