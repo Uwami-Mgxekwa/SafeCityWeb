@@ -174,15 +174,12 @@ async function updateProfileSection() {
         profileCity.textContent = appState.userLocation.displayName;
     }
 
-    // Show loading state with spinner
+    // Show loading state
     if (userTotalReports) {
-        userTotalReports.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        userTotalReports.textContent = '...';
     }
     if (userUpvotesReceived) {
-        userUpvotesReceived.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    }
-    if (userMemberSince) {
-        userMemberSince.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        userUpvotesReceived.textContent = '...';
     }
 
     try {
@@ -835,12 +832,7 @@ async function saveReportWithBackup(newReport) {
 }
 
 // Fetch user statistics from Supabase
-// Cache for user statistics to avoid repeated database calls
-let userStatsCache = null;
-let userStatsCacheTime = null;
-const CACHE_DURATION = 3 * 60 * 1000; // 3 minutes
-
-async function fetchUserStatistics(forceRefresh = false) {
+async function fetchUserStatistics() {
     // This function should only be called when Supabase is confirmed available
     if (!supabase) {
         throw new Error('Supabase client not initialized');
@@ -849,42 +841,35 @@ async function fetchUserStatistics(forceRefresh = false) {
         throw new Error('User not logged in');
     }
 
-    // Check cache first (unless force refresh)
-    if (!forceRefresh && userStatsCache && userStatsCacheTime) {
-        const cacheAge = Date.now() - userStatsCacheTime;
-        if (cacheAge < CACHE_DURATION) {
-            console.log('📊 Using cached user statistics');
-            return userStatsCache;
-        }
-    }
-
     try {
-        console.log('📊 Fetching fresh user statistics...');
-        
-        // Single optimized query - only select needed fields
+        // Fetch user's reports
         const { data: userReports, error: reportsError } = await supabase
             .from('reports')
-            .select('id, type, lat, lng, address, description, photo, upvotes, status, date, user_id, user_email, user_name, user_city')
+            .select('*')
             .or(`user_id.eq.${appState.user.id},user_email.eq.${appState.user.email}`)
             .order('date', { ascending: false });
 
         if (reportsError) {
             console.error('Error fetching user reports:', reportsError);
-            throw reportsError;
         }
 
-        // Calculate statistics
-        const totalReports = userReports ? userReports.length : 0;
-        const totalUpvotes = userReports ? userReports.reduce((sum, report) => sum + (report.upvotes || 0), 0) : 0;
+        // Fetch user's upvotes received (sum of upvotes on their reports)
+        let totalUpvotes = 0;
+        if (userReports && userReports.length > 0) {
+            // Use the upvotes count from the reports table instead of querying upvotes table
+            // This avoids the BIGINT/INTEGER type mismatch issue
+            totalUpvotes = userReports.reduce((sum, report) => sum + (report.upvotes || 0), 0);
+        }
 
-        // Get member since date
+        // Get member since date from user data or reports
         let memberSince = appState.user.created_at;
         if (!memberSince && userReports && userReports.length > 0) {
-            const sortedReports = [...userReports].sort((a, b) => new Date(a.date) - new Date(b.date));
+            // If no created_at in user, use earliest report date
+            const sortedReports = userReports.sort((a, b) => new Date(a.date) - new Date(b.date));
             memberSince = sortedReports[0].date;
         }
 
-        // Process reports efficiently
+        // Process reports for display
         const processedReports = userReports ? userReports.map(report => ({
             id: report.id,
             type: report.type,
@@ -897,38 +882,26 @@ async function fetchUserStatistics(forceRefresh = false) {
             photo: report.photo,
             upvotes: report.upvotes || 0,
             status: report.status,
-            date: report.date, // Keep as string initially, convert when needed
+            date: new Date(report.date),
             user_id: report.user_id,
             user_email: report.user_email,
             user_name: report.user_name,
             user_city: report.user_city
         })) : [];
 
-        const result = {
-            totalReports,
-            totalUpvotes,
-            memberSince,
+        console.log(`Fetched ${processedReports.length} reports and ${totalUpvotes} upvotes for user`);
+
+        return {
+            totalReports: processedReports.length,
+            totalUpvotes: totalUpvotes,
+            memberSince: memberSince,
             userReports: processedReports
         };
-
-        // Cache the result
-        userStatsCache = result;
-        userStatsCacheTime = Date.now();
-
-        console.log(`📊 Fetched ${totalReports} reports and ${totalUpvotes} upvotes for user`);
-        return result;
 
     } catch (error) {
         console.error('Error in fetchUserStatistics:', error);
         throw error;
     }
-}
-
-// Clear user stats cache when needed
-function clearUserStatsCache() {
-    userStatsCache = null;
-    userStatsCacheTime = null;
-    console.log('🗑️ User stats cache cleared');
 }
 
 // Filter reports by city
@@ -955,23 +928,26 @@ function filterReportsByCity(reports, userCity) {
     });
 }
 
-// Load data from Supabase with city filtering
+// Load data from Supabase with optimizations
 async function loadFromSupabase() {
     try {
         if (!supabase) return [];
 
-        // Remove city filtering to load all reports
+        console.time('Supabase Load Time');
+
+        // Load only last 100 reports for speed
         const { data, error } = await supabase
             .from('reports')
-            .select('*')
-            .order('date', { ascending: false }); // Order by newest first
+            .select('id, type, lat, lng, address, description, upvotes, status, date, user_id, user_email, user_name, user_city')
+            .order('date', { ascending: false })
+            .limit(100);
 
         if (error) {
             console.error('Error loading data from Supabase:', error);
             return [];
         }
 
-        console.log('Raw Supabase data:', data); // Debug log
+        console.timeEnd('Supabase Load Time');
 
         const processedReports = data.map(item => ({
             id: item.id,
@@ -982,7 +958,7 @@ async function loadFromSupabase() {
                 address: item.address
             },
             description: item.description,
-            photo: item.photo,
+            photo: null, // Don't load photos initially for speed
             upvotes: item.upvotes,
             status: item.status,
             date: new Date(item.date),
@@ -992,7 +968,16 @@ async function loadFromSupabase() {
             user_city: item.user_city
         }));
 
-        console.log(`Loaded ${processedReports.length} total reports from Supabase`);
+        console.log(`Loaded ${processedReports.length} reports from Supabase`);
+        
+        // Cache the data
+        try {
+            localStorage.setItem('safecity-reports-cache', JSON.stringify(processedReports));
+            localStorage.setItem('safecity-cache-timestamp', Date.now().toString());
+        } catch (e) {
+            console.warn('Could not cache reports:', e);
+        }
+
         return processedReports;
 
     } catch (error) {
@@ -1075,25 +1060,40 @@ async function initializeApp() {
     const supabaseInitialized = initializeSupabase();
 
     try {
-        if (supabaseInitialized) {
-            // Load data exclusively from Supabase
-            console.log('Attempting to load data from Supabase...');
+        // Check cache first (5 minute cache)
+        const cachedData = localStorage.getItem('safecity-reports-cache');
+        const cacheTimestamp = localStorage.getItem('safecity-cache-timestamp');
+        const cacheAge = Date.now() - parseInt(cacheTimestamp || '0');
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+        if (cachedData && cacheAge < CACHE_DURATION) {
+            console.log('Loading from cache...');
+            appState.reports = JSON.parse(cachedData);
+            
+            // Load fresh data in background
+            if (supabaseInitialized) {
+                loadFromSupabase().then(freshData => {
+                    if (freshData.length > 0) {
+                        appState.reports = freshData;
+                        if (appState.currentSection === 'map') renderMapMarkers();
+                        if (appState.currentSection === 'stats') updateStatsView();
+                    }
+                });
+            }
+        } else if (supabaseInitialized) {
+            console.log('Loading from Supabase...');
             appState.reports = await loadFromSupabase();
         } else {
-            // If Supabase isn't available, notify the user and use sample data
-            console.log('Supabase not available. Loading sample data as a fallback.');
+            console.log('Supabase not available. Loading sample data.');
             appState.reports = loadSampleData();
         }
     } catch (error) {
-        console.error('Error loading data from Supabase:', error);
-        // If the Supabase fetch fails, fall back to sample data
-        console.log('Falling back to sample data due to an error.');
+        console.error('Error loading data:', error);
         appState.reports = loadSampleData();
     }
 
-    // If Supabase returned no reports, load sample data for demonstration
     if (!appState.reports || appState.reports.length === 0) {
-        console.log('No reports found in Supabase. Loading sample data.');
+        console.log('No reports found. Loading sample data.');
         appState.reports = loadSampleData();
     }
 
@@ -1108,7 +1108,7 @@ async function initializeApp() {
 
     showSection('map');
 
-    console.log('SafeCity app initialized successfully with', appState.reports.length, 'reports');
+    console.log('SafeCity app initialized with', appState.reports.length, 'reports');
 }
 
 // Setup user menu listeners
@@ -2106,33 +2106,21 @@ function loadUnsavedReport() {
 setTimeout(loadUnsavedReport, 500);
 
 // Utility Functions
-// Utility Functions
 function formatDate(date) {
-    // Handle null or undefined
-    if (!date) {
-        console.warn('Date is null or undefined');
+    // Ensure date is a Date object
+    let dateObj;
+    if (date instanceof Date) {
+        dateObj = date;
+    } else if (typeof date === 'string' || typeof date === 'number') {
+        dateObj = new Date(date);
+    } else {
+        console.warn('Invalid date format:', date);
         return 'Unknown date';
     }
     
-    // Ensure date is a Date object
-    let dateObj;
-    try {
-        if (date instanceof Date) {
-            dateObj = date;
-        } else if (typeof date === 'string' || typeof date === 'number') {
-            dateObj = new Date(date);
-        } else {
-            console.warn('Invalid date format:', date, 'Type:', typeof date);
-            return 'Unknown date';
-        }
-        
-        // Check if date is valid
-        if (isNaN(dateObj.getTime())) {
-            console.warn('Invalid date after parsing:', date);
-            return 'Invalid date';
-        }
-    } catch (error) {
-        console.error('Error parsing date:', date, error);
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) {
+        console.warn('Invalid date:', date);
         return 'Invalid date';
     }
     
@@ -2155,16 +2143,7 @@ function formatDate(date) {
         const weeks = Math.floor(days / 7);
         return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
     } else {
-        try {
-            return dateObj.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            });
-        } catch (error) {
-            console.error('Error formatting date:', error);
-            return dateObj.toISOString().split('T')[0];
-        }
+        return dateObj.toLocaleDateString();
     }
 }
 
@@ -2770,7 +2749,7 @@ let isInstalled = false;
 function initializePWA() {
     // Register service worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
+        navigator.serviceWorker.register('/sw.js')
             .then(registration => {
                 console.log('SafeCity PWA: Service Worker registered');
 
@@ -3841,55 +3820,4 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => {
         initializeViewToggle();
     }, 100);
-});// Perform
-ance optimizations
-let sectionUpdateTimeout = null;
-
-// Debounced section update to prevent multiple rapid calls
-function debouncedSectionUpdate(sectionName) {
-    clearTimeout(sectionUpdateTimeout);
-    sectionUpdateTimeout = setTimeout(() => {
-        if (sectionName === 'profile') {
-            updateProfileSection();
-        } else if (sectionName === 'stats') {
-            updateStatsView();
-        }
-    }, 100);
-}
-
-// Override the original showSection to use debounced updates
-const originalShowSection = showSection;
-showSection = function(sectionName) {
-    // Call original function for UI updates
-    originalShowSection(sectionName);
-    
-    // Use debounced updates for data-heavy sections
-    if (sectionName === 'profile' || sectionName === 'stats') {
-        debouncedSectionUpdate(sectionName);
-    }
-};
-
-// Clear cache when new reports are submitted
-const originalSubmitReport = submitReport;
-submitReport = async function(reportData) {
-    const result = await originalSubmitReport(reportData);
-    
-    // Clear cache to ensure fresh data on next load
-    clearUserStatsCache();
-    
-    return result;
-};
-
-// Optimize DOM operations with requestAnimationFrame
-function optimizedDOMUpdate(callback) {
-    requestAnimationFrame(() => {
-        callback();
-    });
-}
-
-// Lazy loading for heavy operations
-function lazyLoad(callback, delay = 100) {
-    setTimeout(callback, delay);
-}
-
-console.log('⚡ Performance optimizations loaded');
+});

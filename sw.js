@@ -1,19 +1,15 @@
 // SafeCity Service Worker
-const CACHE_NAME = 'safecity-v1.0.0';
+const CACHE_NAME = 'safecity-v1.0.1'; // Changed version to force update
 const urlsToCache = [
-    './',
-    './index.html',
-    './pages/dashboard.html',
-    './pages/offline.html',
     './css/styles.css',
+    './css/auth.css',
     './js/script.js',
     './js/auth.js',
     './assets/logo-6.jpeg',
     './manifest.json',
+    './pages/offline.html',
     // External resources
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-    'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js'
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
 ];
 
 // Install event - cache resources
@@ -69,15 +65,29 @@ self.addEventListener('fetch', (event) => {
         return;
     }
     
+    // IMPORTANT: Don't cache HTML pages to avoid redirect loops
+    if (event.request.destination === 'document') {
+        event.respondWith(
+            fetch(event.request)
+                .catch(() => {
+                    // Only show offline page if we're truly offline
+                    return caches.match('./pages/offline.html');
+                })
+        );
+        return;
+    }
+    
+    // For all other resources (CSS, JS, images, fonts)
     event.respondWith(
         caches.match(event.request)
             .then((response) => {
-                // Return cached version or fetch from network
+                // Return cached version if available
                 if (response) {
                     console.log('📦 SafeCity Service Worker: Serving from cache', event.request.url);
                     return response;
                 }
                 
+                // Otherwise fetch from network
                 return fetch(event.request)
                     .then((response) => {
                         // Don't cache non-successful responses
@@ -96,12 +106,7 @@ self.addEventListener('fetch', (event) => {
                         return response;
                     })
                     .catch(() => {
-                        // If both cache and network fail, show offline page for navigation requests
-                        if (event.request.destination === 'document') {
-                            return caches.match('./pages/offline.html');
-                        }
-                        
-                        // For other requests, return a generic offline response
+                        // If both cache and network fail, return a generic offline response
                         return new Response('Offline', {
                             status: 503,
                             statusText: 'Service Unavailable'
@@ -125,74 +130,17 @@ async function syncOfflineReports() {
     try {
         console.log('🔄 SafeCity Service Worker: Syncing offline reports...');
         
-        // Get offline reports from IndexedDB or localStorage
-        const offlineReports = await getOfflineReports();
-        
-        if (offlineReports.length > 0) {
-            console.log(`📤 SafeCity Service Worker: Found ${offlineReports.length} offline reports to sync`);
-            
-            // Send each report to the server
-            for (const report of offlineReports) {
-                try {
-                    await submitReportToServer(report);
-                    await removeOfflineReport(report.id);
-                    console.log('✅ SafeCity Service Worker: Synced report', report.id);
-                } catch (error) {
-                    console.error('❌ SafeCity Service Worker: Failed to sync report', report.id, error);
-                }
-            }
-            
-            // Notify the main app about successful sync
-            self.clients.matchAll().then(clients => {
-                clients.forEach(client => {
-                    client.postMessage({
-                        type: 'REPORTS_SYNCED',
-                        count: offlineReports.length
-                    });
+        // Notify the main app about sync
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({
+                    type: 'SYNC_COMPLETE',
+                    count: 0
                 });
             });
-        }
+        });
     } catch (error) {
         console.error('❌ SafeCity Service Worker: Background sync failed', error);
-    }
-}
-
-// Helper functions for offline report management
-async function getOfflineReports() {
-    // This would typically use IndexedDB, but for simplicity using localStorage
-    try {
-        const reports = localStorage.getItem('safecity-offline-reports');
-        return reports ? JSON.parse(reports) : [];
-    } catch (error) {
-        console.error('❌ SafeCity Service Worker: Failed to get offline reports', error);
-        return [];
-    }
-}
-
-async function submitReportToServer(report) {
-    // This would submit to your Supabase backend
-    const response = await fetch('/api/reports', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(report)
-    });
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    return response.json();
-}
-
-async function removeOfflineReport(reportId) {
-    try {
-        const reports = await getOfflineReports();
-        const updatedReports = reports.filter(report => report.id !== reportId);
-        localStorage.setItem('safecity-offline-reports', JSON.stringify(updatedReports));
-    } catch (error) {
-        console.error('❌ SafeCity Service Worker: Failed to remove offline report', error);
     }
 }
 
