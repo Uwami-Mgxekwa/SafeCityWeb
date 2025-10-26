@@ -1505,6 +1505,9 @@ function setupMapListeners() {
 
             appState.currentFilter = this.getAttribute('data-filter');
             renderMapMarkers();
+
+            // Update list view if it's currently active
+            updateListViewFilters();
         });
     });
 }
@@ -2436,6 +2439,9 @@ function initializeSearch() {
                 hideSearchResults();
                 showAllMarkers();
             }
+
+            // Update list view if active
+            updateListViewFilters();
         }, 300);
     });
 
@@ -2447,6 +2453,9 @@ function initializeSearch() {
             hideSearchResults();
             showAllMarkers();
             searchInput.focus();
+
+            // Update list view if active
+            updateListViewFilters();
         });
     }
 
@@ -3485,4 +3494,286 @@ function exportReportsUsingPrint() {
     }, 500);
 
     console.log('✅ Print window opened successfully');
+}// View Toggle Functionality
+let currentView = 'map';
+let currentListSort = 'date-desc';
+
+// Initialize view toggle
+function initializeViewToggle() {
+    const viewToggleBtns = document.querySelectorAll('.view-toggle-btn');
+    const mapContainer = document.getElementById('map');
+    const listView = document.getElementById('list-view');
+    const listSortSelect = document.getElementById('list-sort-select');
+
+    // View toggle event listeners
+    viewToggleBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const view = btn.dataset.view;
+            switchView(view);
+        });
+    });
+
+    // Sort change event listener
+    if (listSortSelect) {
+        listSortSelect.addEventListener('change', (e) => {
+            currentListSort = e.target.value;
+            if (currentView === 'list') {
+                updateListView();
+            }
+        });
+    }
 }
+
+// Switch between map and list view
+function switchView(view) {
+    const viewToggleBtns = document.querySelectorAll('.view-toggle-btn');
+    const mapContainer = document.getElementById('map');
+    const listView = document.getElementById('list-view');
+
+    // Update button states
+    viewToggleBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+    });
+
+    // Show/hide views
+    if (view === 'map') {
+        mapContainer.style.display = 'block';
+        listView.style.display = 'none';
+        currentView = 'map';
+    } else {
+        mapContainer.style.display = 'none';
+        listView.style.display = 'block';
+        currentView = 'list';
+        updateListView();
+    }
+}
+
+// Update list view with current reports
+function updateListView() {
+    const issuesList = document.getElementById('issues-list');
+    const listCount = document.getElementById('list-count');
+    const listFilterInfo = document.getElementById('list-filter-info');
+
+    if (!issuesList) return;
+
+    // Get current filter
+    const activeFilter = document.querySelector('.filter-btn.active');
+    const currentFilter = activeFilter ? activeFilter.dataset.filter : 'all';
+
+    // Filter reports
+    let filteredReports = appState.reports;
+    if (currentFilter !== 'all') {
+        filteredReports = appState.reports.filter(report => report.type === currentFilter);
+    }
+
+    // Apply search filter if active
+    const searchTerm = document.getElementById('report-search')?.value.toLowerCase();
+    if (searchTerm) {
+        filteredReports = filteredReports.filter(report =>
+            report.location.address.toLowerCase().includes(searchTerm) ||
+            report.description.toLowerCase().includes(searchTerm) ||
+            report.type.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Sort reports
+    filteredReports = sortReports(filteredReports, currentListSort);
+
+    // Update count and filter info
+    if (listCount) {
+        listCount.textContent = `${filteredReports.length} issue${filteredReports.length !== 1 ? 's' : ''} found`;
+    }
+
+    if (listFilterInfo) {
+        let filterText = currentFilter === 'all' ? 'All Issues' :
+            currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1) + 's';
+        if (searchTerm) {
+            filterText += ` matching "${searchTerm}"`;
+        }
+        listFilterInfo.textContent = filterText;
+    }
+
+    // Clear and populate list
+    issuesList.innerHTML = '';
+
+    if (filteredReports.length === 0) {
+        issuesList.innerHTML = `
+            <div class="no-issues-message">
+                <i class="fas fa-search"></i>
+                <p>No issues found matching your criteria.</p>
+                <p>Try adjusting your filters or search terms.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Create issue items
+    filteredReports.forEach(report => {
+        const issueItem = createIssueListItem(report);
+        issuesList.appendChild(issueItem);
+    });
+}
+
+// Create individual issue list item
+function createIssueListItem(report) {
+    const item = document.createElement('div');
+    item.className = `issue-item ${report.status}`;
+    item.dataset.reportId = report.id;
+
+    const issueTypeIcon = getIssueTypeIcon(report.type);
+    const formattedDate = formatDate(report.date);
+    const truncatedDescription = report.description ?
+        (report.description.length > 100 ?
+            report.description.substring(0, 100) + '...' :
+            report.description) :
+        'No description provided';
+
+    item.innerHTML = `
+        <div class="issue-icon">
+            <i class="${issueTypeIcon}"></i>
+        </div>
+        <div class="issue-content">
+            <h4 class="issue-title">${formatReportTitle(report)}</h4>
+            <div class="issue-location">
+                <i class="fas fa-map-marker-alt"></i>
+                ${report.location.address}
+            </div>
+            <div class="issue-description">${truncatedDescription}</div>
+        </div>
+        <div class="issue-meta">
+            <div class="issue-date">
+                <i class="fas fa-clock"></i>
+                ${formattedDate}
+            </div>
+            <div class="issue-upvotes" onclick="upvoteReport(${report.id})">
+                <i class="fas fa-arrow-up"></i>
+                ${report.upvotes}
+            </div>
+            <span class="issue-status ${report.status}">
+                ${report.status}
+            </span>
+        </div>
+    `;
+
+    // Add click event to show issue details
+    item.addEventListener('click', (e) => {
+        // Don't trigger if clicking on upvote button
+        if (!e.target.closest('.issue-upvotes')) {
+            showIssueDetails(report);
+        }
+    });
+
+    return item;
+}
+
+// Sort reports based on selected criteria
+function sortReports(reports, sortBy) {
+    const sortedReports = [...reports];
+
+    switch (sortBy) {
+        case 'date-desc':
+            return sortedReports.sort((a, b) => new Date(b.date) - new Date(a.date));
+        case 'date-asc':
+            return sortedReports.sort((a, b) => new Date(a.date) - new Date(b.date));
+        case 'upvotes-desc':
+            return sortedReports.sort((a, b) => b.upvotes - a.upvotes);
+        case 'upvotes-asc':
+            return sortedReports.sort((a, b) => a.upvotes - b.upvotes);
+        case 'status':
+            const statusOrder = { 'new': 0, 'acknowledged': 1, 'resolved': 2 };
+            return sortedReports.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+        default:
+            return sortedReports;
+    }
+}
+
+// Show detailed issue information in a modal
+function showIssueDetails(report) {
+    // Create modal for issue details
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+
+    const issueTypeIcon = getIssueTypeIcon(report.type);
+    const formattedDate = formatDate(report.date);
+
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="issue-icon">
+                    <i class="${issueTypeIcon}"></i>
+                </div>
+                <h2>${formatReportTitle(report)}</h2>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="issue-detail-section">
+                    <h3><i class="fas fa-map-marker-alt"></i> Location</h3>
+                    <p>${report.location.address}</p>
+                </div>
+                
+                ${report.description ? `
+                    <div class="issue-detail-section">
+                        <h3><i class="fas fa-file-text"></i> Description</h3>
+                        <p>${report.description}</p>
+                    </div>
+                ` : ''}
+                
+                <div class="issue-detail-section">
+                    <h3><i class="fas fa-info-circle"></i> Details</h3>
+                    <div class="issue-details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Status:</span>
+                            <span class="issue-status ${report.status}">${report.status}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Reported:</span>
+                            <span>${formattedDate}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Upvotes:</span>
+                            <span>${report.upvotes}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Report ID:</span>
+                            <span>#${report.id}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="upvoteReport(${report.id}); this.closest('.modal').remove();">
+                    <i class="fas fa-arrow-up"></i> Upvote Issue
+                </button>
+                <button class="btn-primary" onclick="this.closest('.modal').remove()">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+// Update list view when filters change
+function updateListViewFilters() {
+    if (currentView === 'list') {
+        updateListView();
+    }
+}
+
+// Initialize view toggle when DOM is loaded
+document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(() => {
+        initializeViewToggle();
+    }, 100);
+});

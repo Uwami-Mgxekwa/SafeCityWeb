@@ -91,7 +91,17 @@
         <section id="map-section" class="section active">
             <div class="map-container">
                 <div class="map-header">
-                    <h2>Live Infrastructure Issues Map</h2>
+                    <div class="map-title-section">
+                        <h2>Live Infrastructure Issues</h2>
+                        <div class="view-toggle">
+                            <button class="view-toggle-btn active" data-view="map">
+                                <i class="fas fa-map"></i> Map View
+                            </button>
+                            <button class="view-toggle-btn" data-view="list">
+                                <i class="fas fa-list"></i> List View
+                            </button>
+                        </div>
+                    </div>
                     <div class="map-location-info">
                         <i class="fas fa-map-marker-alt"></i>
                         <span id="map-city-display">Loading location...</span>
@@ -129,6 +139,32 @@
                         <div class="sample-markers" id="dynamic-markers">
                             <!-- Markers will be dynamically generated here -->
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List View Container -->
+            <div class="list-view" id="list-view" style="display: none;">
+                <div class="list-header">
+                    <div class="list-stats">
+                        <span class="list-count" id="list-count">Loading issues...</span>
+                        <span class="list-filter-info" id="list-filter-info">All Issues</span>
+                    </div>
+                    <div class="list-sort">
+                        <select id="list-sort-select">
+                            <option value="date-desc">Newest First</option>
+                            <option value="date-asc">Oldest First</option>
+                            <option value="upvotes-desc">Most Upvoted</option>
+                            <option value="upvotes-asc">Least Upvoted</option>
+                            <option value="status">By Status</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="issues-list" id="issues-list">
+                    <!-- Issues will be populated here by JavaScript -->
+                    <div class="loading-message">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading issues...</p>
                     </div>
                 </div>
             </div>

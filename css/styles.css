@@ -3085,4 +3085,490 @@ body {
     background: rgba(255, 107, 107, 0.2);
     border-color: #ff6b6b;
     color: #ff6b6b;
+}/* V
+iew Toggle Styles */
+.map-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.view-toggle {
+    display: flex;
+    background: var(--card-bg);
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.view-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.view-toggle-btn:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.view-toggle-btn.active {
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.view-toggle-btn i {
+    font-size: 16px;
+}
+
+/* List View Styles */
+.list-view {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.list-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.list-count {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.list-filter-info {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.list-sort select {
+    padding: 8px 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.list-sort select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Issues List */
+.issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.issue-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: var(--legend-bg);
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Removed - consolidated into the hover behavior section below */
+
+.issue-item.new {
+    border-left-color: #ff6b6b;
+}
+
+.issue-item.acknowledged {
+    border-left-color: #ffa502;
+}
+
+.issue-item.resolved {
+    border-left-color: #26de81;
+}
+
+.issue-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    color: white;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.issue-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.issue-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    transition: color 0.3s ease;
+}
+
+.issue-location {
+    font-size: 14px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.3s ease;
+}
+
+.issue-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    max-height: 40px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.3s ease;
+}
+
+.issue-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+.issue-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.3s ease;
+}
+
+.issue-upvotes {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    background: var(--hover-bg);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.issue-upvotes:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.issue-status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.issue-status.new {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+}
+
+.issue-status.acknowledged {
+    background: rgba(255, 165, 2, 0.1);
+    color: #ffa502;
+}
+
+.issue-status.resolved {
+    background: rgba(38, 222, 129, 0.1);
+    color: #26de81;
+}
+
+/* Responsive Design for List View */
+@media (max-width: 768px) {
+    .map-title-section {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .view-toggle {
+        justify-content: center;
+    }
+    
+    .list-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .list-stats {
+        text-align: center;
+    }
+    
+    .issue-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .issue-meta {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 480px) {
+    .view-toggle-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .view-toggle-btn span {
+        display: none;
+    }
+    
+    .issue-item {
+        padding: 12px;
+    }
+    
+    .issue-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+}/*
+ Issue Details Modal Styles */
+.issue-detail-section {
+    margin-bottom: 20px;
+}
+
+.issue-detail-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.issue-detail-section h3 i {
+    color: var(--primary-color);
+}
+
+.issue-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+/* No Issues Message */
+.no-issues-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.no-issues-message i {
+    font-size: 48px;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    opacity: 0.5;
+}
+
+.no-issues-message p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+.no-issues-message p:first-of-type {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Modal Close Button */
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+/* Loading Message in List View */
+.issues-list .loading-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.issues-list .loading-message i {
+    font-size: 32px;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+.issues-list .loading-message p {
+    margin: 0;
+    font-size: 16px;
+}/* Fi
+x scrollbar styling for issues list */
+.issues-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.issues-list::-webkit-scrollbar-track {
+    background: var(--legend-bg);
+    border-radius: 4px;
+}
+
+.issues-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.issues-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+/* Firefox scrollbar styling */
+.issues-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) var(--legend-bg);
+}
+
+/* Ensure proper text colors in dark mode hover states */
+[data-theme="dark"] .issue-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .issue-item:hover .issue-title {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .issue-item:hover .issue-location {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .issue-item:hover .issue-description {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .issue-item:hover .issue-date {
+    color: var(--text-secondary);
+}
+
+/* Fix hover state for upvotes in dark mode */
+[data-theme="dark"] .issue-upvotes:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Ensure consistent hover behavior */
+.issue-item {
+    transition: all 0.3s ease;
+}
+
+/* Light mode hover - subtle background change with transform */
+.issue-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+}
+
+/* Dark mode hover - very subtle white overlay with transform */
+[data-theme="dark"] .issue-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+}
+
+/* Prevent text color changes on hover - maintain theme colors */
+.issue-item:hover .issue-title,
+.issue-item:hover .issue-location,
+.issue-item:hover .issue-description,
+.issue-item:hover .issue-date {
+    color: inherit;
+}
+
+/* Ensure icons maintain their colors */
+.issue-item:hover .issue-location i,
+.issue-item:hover .issue-date i {
+    color: var(--text-secondary);
 }
