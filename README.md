@@ -1217,4 +1217,4 @@ Thank you for your interest in SafeCity. Together, we can build stronger, more r
 
 Made with ❤️ for the community by [Uwami Mgxekwa](https://github.com/Uwami-Mgxekwa)
 
-</div>
+</div>- 
