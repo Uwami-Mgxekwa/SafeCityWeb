@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeCity - Offline</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="../assets/logo-6.jpeg">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -13,157 +21,226 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0;
             color: white;
-            text-align: center;
         }
-        
+
         .offline-container {
-            max-width: 400px;
+            text-align: center;
             padding: 40px 20px;
+            max-width: 500px;
         }
-        
+
         .offline-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
+            font-size: 80px;
+            margin-bottom: 30px;
             opacity: 0.8;
+            animation: pulse 2s infinite;
         }
-        
-        .offline-title {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 15px;
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
-        
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
         .offline-message {
-            font-size: 1.1rem;
-            line-height: 1.6;
+            font-size: 1.2rem;
             margin-bottom: 30px;
             opacity: 0.9;
+            line-height: 1.6;
         }
-        
-        .offline-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border: 2px solid white;
-            background: transparent;
-            color: white;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-        
-        .btn:hover {
-            background: white;
-            color: #667eea;
-            transform: translateY(-2px);
-        }
-        
-        .btn-primary {
-            background: white;
-            color: #667eea;
-        }
-        
-        .btn-primary:hover {
-            background: transparent;
-            color: white;
-        }
-        
+
         .offline-features {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            backdrop-filter: blur(10px);
         }
-        
+
         .offline-features h3 {
             margin-bottom: 15px;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
         }
-        
+
         .offline-features ul {
             list-style: none;
-            padding: 0;
+            text-align: left;
         }
-        
+
         .offline-features li {
-            margin: 8px 0;
-            opacity: 0.8;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .offline-features i {
-            margin-right: 8px;
-            color: #a8d8ea;
+
+        .offline-features li i {
+            color: #26de81;
+            width: 20px;
         }
-        
+
+        .retry-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .retry-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .connection-status {
+            margin-top: 30px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .connection-status.offline {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .connection-status.online {
+            background: rgba(38, 222, 129, 0.2);
+            border: 1px solid rgba(38, 222, 129, 0.3);
+        }
+
         @media (max-width: 480px) {
-            .offline-container {
-                padding: 20px 15px;
+            .offline-icon {
+                font-size: 60px;
             }
-            
-            .offline-title {
-                font-size: 1.5rem;
+
+            h1 {
+                font-size: 2rem;
             }
-            
+
             .offline-message {
                 font-size: 1rem;
+            }
+
+            .offline-container {
+                padding: 20px 15px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="offline-container">
-        <div class="offline-icon">📡</div>
-        <h1 class="offline-title">You're Offline</h1>
-        <p class="offline-message">
-            No internet connection detected. Don't worry - you can still browse previously loaded content and submit reports when you're back online!
-        </p>
-        
-        <div class="offline-actions">
-            <button class="btn btn-primary" onclick="window.location.reload()">
-                🔄 Try Again
-            </button>
-            <a href="./dashboard.html" class="btn">
-                🏠 Go to Dashboard
-            </a>
+        <div class="offline-icon">
+            <i class="fas fa-wifi" id="connection-icon"></i>
         </div>
-        
+
+        <h1>You're Offline</h1>
+
+        <div class="offline-message">
+            <p>Don't worry! SafeCity works offline too. You can still browse previously loaded content and submit
+                reports when you're back online.</p>
+        </div>
+
         <div class="offline-features">
-            <h3>Available Offline:</h3>
+            <h3><i class="fas fa-check-circle"></i> Available Offline:</h3>
             <ul>
-                <li><i class="fas fa-eye"></i> View cached reports</li>
-                <li><i class="fas fa-plus"></i> Submit reports (syncs when online)</li>
+                <li><i class="fas fa-map"></i> View cached infrastructure issues</li>
+                <li><i class="fas fa-plus-circle"></i> Submit reports (synced when online)</li>
+                <li><i class="fas fa-chart-bar"></i> Browse statistics</li>
                 <li><i class="fas fa-user"></i> Access your profile</li>
-                <li><i class="fas fa-map"></i> Browse the map</li>
             </ul>
+        </div>
+
+        <button class="retry-btn" onclick="checkConnection()">
+            <i class="fas fa-sync-alt" id="retry-icon"></i>
+            Check Connection
+        </button>
+
+        <div class="connection-status offline" id="connection-status">
+            <i class="fas fa-exclamation-triangle"></i>
+            No internet connection detected
         </div>
     </div>
 
     <script>
-        // Check for connection and auto-reload
-        window.addEventListener('online', function() {
-            console.log('Connection restored');
+        // Check connection status
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('connection-status');
+            const iconEl = document.getElementById('connection-icon');
+
+            if (navigator.onLine) {
+                statusEl.className = 'connection-status online';
+                statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Connection restored! You can now access all features.';
+                iconEl.className = 'fas fa-wifi';
+
+                // Auto-redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = './dashboard.html';
+                }, 2000);
+            } else {
+                statusEl.className = 'connection-status offline';
+                statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> No internet connection detected';
+                iconEl.className = 'fas fa-wifi';
+            }
+        }
+
+        // Manual connection check
+        function checkConnection() {
+            const retryIcon = document.getElementById('retry-icon');
+            retryIcon.style.animation = 'spin 1s linear infinite';
+
             setTimeout(() => {
-                window.location.reload();
+                updateConnectionStatus();
+                retryIcon.style.animation = '';
             }, 1000);
-        });
-        
-        // Show connection status
+        }
+
+        // Listen for connection changes
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Initial check
+        updateConnectionStatus();
+
+        // Add spin animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Try to go back to the app if online
         if (navigator.onLine) {
-            document.querySelector('.offline-message').innerHTML = 
-                'Connection restored! <br><small>Redirecting...</small>';
             setTimeout(() => {
                 window.location.href = './dashboard.html';
-            }, 2000);
+            }, 1000);
         }
     </script>
 </body>
+
 </html>

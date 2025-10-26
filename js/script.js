@@ -174,12 +174,15 @@ async function updateProfileSection() {
         profileCity.textContent = appState.userLocation.displayName;
     }
 
-    // Show loading state
+    // Show loading state with spinner
     if (userTotalReports) {
-        userTotalReports.textContent = '...';
+        userTotalReports.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     }
     if (userUpvotesReceived) {
-        userUpvotesReceived.textContent = '...';
+        userUpvotesReceived.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+    if (userMemberSince) {
+        userMemberSince.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     }
 
     try {
@@ -832,7 +835,12 @@ async function saveReportWithBackup(newReport) {
 }
 
 // Fetch user statistics from Supabase
-async function fetchUserStatistics() {
+// Cache for user statistics to avoid repeated database calls
+let userStatsCache = null;
+let userStatsCacheTime = null;
+const CACHE_DURATION = 3 * 60 * 1000; // 3 minutes
+
+async function fetchUserStatistics(forceRefresh = false) {
     // This function should only be called when Supabase is confirmed available
     if (!supabase) {
         throw new Error('Supabase client not initialized');
@@ -841,35 +849,42 @@ async function fetchUserStatistics() {
         throw new Error('User not logged in');
     }
 
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && userStatsCache && userStatsCacheTime) {
+        const cacheAge = Date.now() - userStatsCacheTime;
+        if (cacheAge < CACHE_DURATION) {
+            console.log('📊 Using cached user statistics');
+            return userStatsCache;
+        }
+    }
+
     try {
-        // Fetch user's reports
+        console.log('📊 Fetching fresh user statistics...');
+        
+        // Single optimized query - only select needed fields
         const { data: userReports, error: reportsError } = await supabase
             .from('reports')
-            .select('*')
+            .select('id, type, lat, lng, address, description, photo, upvotes, status, date, user_id, user_email, user_name, user_city')
             .or(`user_id.eq.${appState.user.id},user_email.eq.${appState.user.email}`)
             .order('date', { ascending: false });
 
         if (reportsError) {
             console.error('Error fetching user reports:', reportsError);
+            throw reportsError;
         }
 
-        // Fetch user's upvotes received (sum of upvotes on their reports)
-        let totalUpvotes = 0;
-        if (userReports && userReports.length > 0) {
-            // Use the upvotes count from the reports table instead of querying upvotes table
-            // This avoids the BIGINT/INTEGER type mismatch issue
-            totalUpvotes = userReports.reduce((sum, report) => sum + (report.upvotes || 0), 0);
-        }
+        // Calculate statistics
+        const totalReports = userReports ? userReports.length : 0;
+        const totalUpvotes = userReports ? userReports.reduce((sum, report) => sum + (report.upvotes || 0), 0) : 0;
 
-        // Get member since date from user data or reports
+        // Get member since date
         let memberSince = appState.user.created_at;
         if (!memberSince && userReports && userReports.length > 0) {
-            // If no created_at in user, use earliest report date
-            const sortedReports = userReports.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const sortedReports = [...userReports].sort((a, b) => new Date(a.date) - new Date(b.date));
             memberSince = sortedReports[0].date;
         }
 
-        // Process reports for display
+        // Process reports efficiently
         const processedReports = userReports ? userReports.map(report => ({
             id: report.id,
             type: report.type,
@@ -882,26 +897,38 @@ async function fetchUserStatistics() {
             photo: report.photo,
             upvotes: report.upvotes || 0,
             status: report.status,
-            date: new Date(report.date),
+            date: report.date, // Keep as string initially, convert when needed
             user_id: report.user_id,
             user_email: report.user_email,
             user_name: report.user_name,
             user_city: report.user_city
         })) : [];
 
-        console.log(`Fetched ${processedReports.length} reports and ${totalUpvotes} upvotes for user`);
-
-        return {
-            totalReports: processedReports.length,
-            totalUpvotes: totalUpvotes,
-            memberSince: memberSince,
+        const result = {
+            totalReports,
+            totalUpvotes,
+            memberSince,
             userReports: processedReports
         };
+
+        // Cache the result
+        userStatsCache = result;
+        userStatsCacheTime = Date.now();
+
+        console.log(`📊 Fetched ${totalReports} reports and ${totalUpvotes} upvotes for user`);
+        return result;
 
     } catch (error) {
         console.error('Error in fetchUserStatistics:', error);
         throw error;
     }
+}
+
+// Clear user stats cache when needed
+function clearUserStatsCache() {
+    userStatsCache = null;
+    userStatsCacheTime = null;
+    console.log('🗑️ User stats cache cleared');
 }
 
 // Filter reports by city
@@ -2079,9 +2106,38 @@ function loadUnsavedReport() {
 setTimeout(loadUnsavedReport, 500);
 
 // Utility Functions
+// Utility Functions
 function formatDate(date) {
+    // Handle null or undefined
+    if (!date) {
+        console.warn('Date is null or undefined');
+        return 'Unknown date';
+    }
+    
+    // Ensure date is a Date object
+    let dateObj;
+    try {
+        if (date instanceof Date) {
+            dateObj = date;
+        } else if (typeof date === 'string' || typeof date === 'number') {
+            dateObj = new Date(date);
+        } else {
+            console.warn('Invalid date format:', date, 'Type:', typeof date);
+            return 'Unknown date';
+        }
+        
+        // Check if date is valid
+        if (isNaN(dateObj.getTime())) {
+            console.warn('Invalid date after parsing:', date);
+            return 'Invalid date';
+        }
+    } catch (error) {
+        console.error('Error parsing date:', date, error);
+        return 'Invalid date';
+    }
+    
     const now = new Date();
-    const diff = now - date;
+    const diff = now - dateObj;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
     if (days === 0) {
@@ -2099,7 +2155,16 @@ function formatDate(date) {
         const weeks = Math.floor(days / 7);
         return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
     } else {
-        return date.toLocaleDateString();
+        try {
+            return dateObj.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        } catch (error) {
+            console.error('Error formatting date:', error);
+            return dateObj.toISOString().split('T')[0];
+        }
     }
 }
 
@@ -2705,7 +2770,7 @@ let isInstalled = false;
 function initializePWA() {
     // Register service worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('./sw.js')
             .then(registration => {
                 console.log('SafeCity PWA: Service Worker registered');
 
@@ -3776,4 +3841,55 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => {
         initializeViewToggle();
     }, 100);
-});
+});// Perform
+ance optimizations
+let sectionUpdateTimeout = null;
+
+// Debounced section update to prevent multiple rapid calls
+function debouncedSectionUpdate(sectionName) {
+    clearTimeout(sectionUpdateTimeout);
+    sectionUpdateTimeout = setTimeout(() => {
+        if (sectionName === 'profile') {
+            updateProfileSection();
+        } else if (sectionName === 'stats') {
+            updateStatsView();
+        }
+    }, 100);
+}
+
+// Override the original showSection to use debounced updates
+const originalShowSection = showSection;
+showSection = function(sectionName) {
+    // Call original function for UI updates
+    originalShowSection(sectionName);
+    
+    // Use debounced updates for data-heavy sections
+    if (sectionName === 'profile' || sectionName === 'stats') {
+        debouncedSectionUpdate(sectionName);
+    }
+};
+
+// Clear cache when new reports are submitted
+const originalSubmitReport = submitReport;
+submitReport = async function(reportData) {
+    const result = await originalSubmitReport(reportData);
+    
+    // Clear cache to ensure fresh data on next load
+    clearUserStatsCache();
+    
+    return result;
+};
+
+// Optimize DOM operations with requestAnimationFrame
+function optimizedDOMUpdate(callback) {
+    requestAnimationFrame(() => {
+        callback();
+    });
+}
+
+// Lazy loading for heavy operations
+function lazyLoad(callback, delay = 100) {
+    setTimeout(callback, delay);
+}
+
+console.log('⚡ Performance optimizations loaded');
