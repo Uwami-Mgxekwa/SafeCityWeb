@@ -6,18 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SafeCity - Loading...</title>
     <!-- Standard favicon -->
-    <link rel="icon" type="image/png" href="assets/logo-6.jpeg">
+    <link rel="icon" type="image/png" href="./assets/logo-6.jpeg">
 
     <!-- Apple Touch Icons for iPhone/iPad -->
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/logo-6.jpeg">
-    <link rel="apple-touch-icon" sizes="152x152" href="assets/logo-6.jpeg">
-    <link rel="apple-touch-icon" sizes="120x120" href="assets/logo-6.jpeg">
-    <link rel="apple-touch-icon" sizes="76x76" href="assets/logo-6.jpeg">
-    <link rel="apple-touch-icon" sizes="60x60" href="assets/logo-6.jpeg">
-    <link rel="apple-touch-icon" sizes="57x57" href="assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="152x152" href="./assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="120x120" href="./assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="76x76" href="./assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="60x60" href="./assets/logo-6.jpeg">
+    <link rel="apple-touch-icon" sizes="57x57" href="./assets/logo-6.jpeg">
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="./manifest.json">
     
     <!-- Additional meta for iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -119,10 +119,10 @@
 
             if (rememberedUser) {
                 // User is authenticated, redirect to main app
-                window.location.replace('pages/dashboard.html');
+                window.location.replace('./pages/dashboard.html');
             } else {
                 // User not authenticated, redirect to login
-                window.location.replace('pages/auth.html');
+                window.location.replace('./pages/auth.html');
             }
         }
 
@@ -135,7 +135,7 @@
         // Register service worker for PWA functionality
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('./sw.js')
                     .then(function(registration) {
                         console.log('SafeCity PWA: Service Worker registered successfully');
                     })

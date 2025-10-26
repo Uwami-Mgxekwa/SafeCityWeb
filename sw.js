@@ -1,19 +1,19 @@
 // SafeCity Service Worker
 const CACHE_NAME = 'safecity-v1.0.0';
-const OFFLINE_URL = '/pages/offline.html';
+const OFFLINE_URL = './pages/offline.html';
 
 // Files to cache for offline functionality
 const CACHE_FILES = [
-  '/',
-  '/index.html',
-  '/pages/dashboard.html',
-  '/pages/auth.html',
-  '/css/styles.css',
-  '/css/auth.css',
-  '/js/script.js',
-  '/js/auth.js',
-  '/assets/logo-6.jpeg',
-  '/manifest.json',
+  './',
+  './index.html',
+  './pages/dashboard.html',
+  './pages/auth.html',
+  './css/styles.css',
+  './css/auth.css',
+  './js/script.js',
+  './js/auth.js',
+  './assets/logo-6.jpeg',
+  './manifest.json',
   // External resources
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
@@ -180,20 +180,20 @@ self.addEventListener('push', event => {
   const data = event.data.json();
   const options = {
     body: data.body,
-    icon: '/assets/logo-6.jpeg',
-    badge: '/assets/logo-6.jpeg',
+    icon: './assets/logo-6.jpeg',
+    badge: './assets/logo-6.jpeg',
     vibrate: [200, 100, 200],
     data: data.data || {},
     actions: [
       {
         action: 'view',
         title: 'View Report',
-        icon: '/assets/logo-6.jpeg'
+        icon: './assets/logo-6.jpeg'
       },
       {
         action: 'close',
         title: 'Close',
-        icon: '/assets/logo-6.jpeg'
+        icon: './assets/logo-6.jpeg'
       }
     ]
   };
@@ -210,7 +210,7 @@ self.addEventListener('notificationclick', event => {
   if (event.action === 'view') {
     // Open the app to the relevant report
     event.waitUntil(
-      clients.openWindow('/pages/dashboard.html')
+      clients.openWindow('./pages/dashboard.html')
     );
   }
 });
