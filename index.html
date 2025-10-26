@@ -16,10 +16,22 @@
     <link rel="apple-touch-icon" sizes="60x60" href="assets/logo-6.jpeg">
     <link rel="apple-touch-icon" sizes="57x57" href="assets/logo-6.jpeg">
 
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
     <!-- Additional meta for iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SafeCity">
+    
+    <!-- PWA Theme Colors -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="msapplication-TileColor" content="#667eea">
+    <meta name="msapplication-navbutton-color" content="#667eea">
+    
+    <!-- PWA Display Mode -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="SafeCity">
     <style>
         body {
             margin: 0;
@@ -118,6 +130,19 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('signup') === 'success') {
             showAlert('success', 'Welcome to SafeCity! Please check your email to verify your account, then sign in.');
+        }
+
+        // Register service worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('SafeCity PWA: Service Worker registered successfully');
+                    })
+                    .catch(function(error) {
+                        console.log('SafeCity PWA: Service Worker registration failed');
+                    });
+            });
         }
 
         // Redirect after a brief delay to show the loading animation

@@ -1017,6 +1017,7 @@ async function initializeApp() {
     setupMapListeners();
     setupModalListeners();
     setupUserMenuListeners();
+    initializeSearch();
 
     getCurrentLocation();
 
@@ -2346,3 +2347,561 @@ window.checkNotificationConfig = function () {
         console.warn('⚠️ WhatsApp number not updated! Update the config in js/script.js');
     }
 };
+// ===== SEARCH FUNCTIONALITY =====
+
+let searchTimeout;
+let currentSearchResults = [];
+
+// Initialize search functionality
+function initializeSearch() {
+    const searchInput = document.getElementById('report-search');
+    const clearButton = document.getElementById('clear-search');
+    const searchResults = document.getElementById('search-results');
+
+    if (!searchInput) return;
+
+    // Search input event listener
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
+        
+        // Show/hide clear button
+        if (clearButton) {
+            clearButton.style.display = query ? 'flex' : 'none';
+        }
+
+        // Debounce search
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            if (query.length >= 2) {
+                performSearch(query);
+            } else {
+                hideSearchResults();
+                showAllMarkers();
+            }
+        }, 300);
+    });
+
+    // Clear search
+    if (clearButton) {
+        clearButton.addEventListener('click', function() {
+            searchInput.value = '';
+            clearButton.style.display = 'none';
+            hideSearchResults();
+            showAllMarkers();
+            searchInput.focus();
+        });
+    }
+
+    // Hide search results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container')) {
+            hideSearchResults();
+        }
+    });
+
+    // Keyboard navigation
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            hideSearchResults();
+            searchInput.blur();
+        }
+    });
+}
+
+// Perform search
+function performSearch(query) {
+    const searchResults = document.getElementById('search-results');
+    if (!searchResults) return;
+
+    const results = searchReports(query);
+    currentSearchResults = results;
+
+    if (results.length > 0) {
+        displaySearchResults(results);
+        highlightSearchResults(results);
+    } else {
+        displayNoResults(query);
+        showAllMarkers();
+    }
+}
+
+// Search through reports
+function searchReports(query) {
+    const searchTerm = query.toLowerCase();
+    
+    return appState.reports.filter(report => {
+        // Search in description
+        const descriptionMatch = report.description.toLowerCase().includes(searchTerm);
+        
+        // Search in location
+        const locationMatch = report.location?.address?.toLowerCase().includes(searchTerm);
+        
+        // Search in type
+        const typeMatch = report.type.toLowerCase().includes(searchTerm);
+        
+        // Search in status
+        const statusMatch = report.status.toLowerCase().includes(searchTerm);
+        
+        // Search in report ID
+        const idMatch = report.id.toString().includes(searchTerm);
+
+        return descriptionMatch || locationMatch || typeMatch || statusMatch || idMatch;
+    });
+}
+
+// Display search results
+function displaySearchResults(results) {
+    const searchResults = document.getElementById('search-results');
+    if (!searchResults) return;
+
+    searchResults.innerHTML = '';
+    
+    results.slice(0, 8).forEach(report => { // Limit to 8 results
+        const resultItem = createSearchResultItem(report);
+        searchResults.appendChild(resultItem);
+    });
+
+    if (results.length > 8) {
+        const moreResults = document.createElement('div');
+        moreResults.className = 'search-result-item';
+        moreResults.style.fontStyle = 'italic';
+        moreResults.style.color = '#666';
+        moreResults.innerHTML = `<i class="fas fa-ellipsis-h"></i> ${results.length - 8} more results...`;
+        searchResults.appendChild(moreResults);
+    }
+
+    searchResults.style.display = 'block';
+}
+
+// Create search result item
+function createSearchResultItem(report) {
+    const item = document.createElement('div');
+    item.className = 'search-result-item';
+    
+    const icon = document.createElement('div');
+    icon.className = `search-result-icon ${report.type}`;
+    icon.innerHTML = `<i class="${getIssueTypeIcon(report.type)}"></i>`;
+    
+    const details = document.createElement('div');
+    details.className = 'search-result-details';
+    
+    const title = document.createElement('div');
+    title.className = 'search-result-title';
+    title.textContent = formatReportTitle(report);
+    
+    const location = document.createElement('div');
+    location.className = 'search-result-location';
+    location.textContent = report.location?.address || 'Unknown location';
+    
+    const meta = document.createElement('div');
+    meta.className = 'search-result-meta';
+    meta.innerHTML = `
+        <span><i class="fas fa-calendar"></i> ${formatDate(report.date)}</span>
+        <span><i class="fas fa-arrow-up"></i> ${report.upvotes}</span>
+        <span class="status ${report.status}">${report.status}</span>
+    `;
+    
+    details.appendChild(title);
+    details.appendChild(location);
+    details.appendChild(meta);
+    
+    item.appendChild(icon);
+    item.appendChild(details);
+    
+    // Click handler
+    item.addEventListener('click', () => {
+        selectSearchResult(report);
+    });
+    
+    return item;
+}
+
+// Display no results message
+function displayNoResults(query) {
+    const searchResults = document.getElementById('search-results');
+    if (!searchResults) return;
+
+    searchResults.innerHTML = `
+        <div class="search-no-results">
+            <i class="fas fa-search"></i>
+            <p>No reports found for "${query}"</p>
+            <small>Try searching by location, issue type, or description</small>
+        </div>
+    `;
+    
+    searchResults.style.display = 'block';
+}
+
+// Hide search results
+function hideSearchResults() {
+    const searchResults = document.getElementById('search-results');
+    if (searchResults) {
+        searchResults.style.display = 'none';
+    }
+}
+
+// Highlight search results on map
+function highlightSearchResults(results) {
+    const markers = document.querySelectorAll('.marker');
+    
+    // Hide all markers first
+    markers.forEach(marker => {
+        marker.style.display = 'none';
+    });
+    
+    // Show only matching markers
+    results.forEach(report => {
+        const marker = document.querySelector(`[data-report-id="${report.id}"]`);
+        if (marker) {
+            marker.style.display = 'flex';
+            marker.classList.add('search-highlight');
+        }
+    });
+}
+
+// Show all markers
+function showAllMarkers() {
+    const markers = document.querySelectorAll('.marker');
+    markers.forEach(marker => {
+        marker.style.display = 'flex';
+        marker.classList.remove('search-highlight');
+    });
+}
+
+// Select search result
+function selectSearchResult(report) {
+    hideSearchResults();
+    
+    // Find and highlight the marker
+    const marker = document.querySelector(`[data-report-id="${report.id}"]`);
+    if (marker) {
+        // Scroll marker into view
+        marker.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Highlight the marker
+        marker.style.transform = 'scale(1.3)';
+        marker.style.zIndex = '1000';
+        marker.style.boxShadow = '0 0 20px rgba(102, 126, 234, 0.8)';
+        
+        // Show marker info
+        const markerInfo = marker.querySelector('.marker-info');
+        if (markerInfo) {
+            markerInfo.style.opacity = '1';
+            markerInfo.style.visibility = 'visible';
+        }
+        
+        // Reset highlight after 3 seconds
+        setTimeout(() => {
+            marker.style.transform = 'scale(1)';
+            marker.style.zIndex = '10';
+            marker.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+            if (markerInfo) {
+                markerInfo.style.opacity = '0';
+                markerInfo.style.visibility = 'hidden';
+            }
+        }, 3000);
+    }
+    
+    // Clear search
+    const searchInput = document.getElementById('report-search');
+    const clearButton = document.getElementById('clear-search');
+    if (searchInput) searchInput.value = '';
+    if (clearButton) clearButton.style.display = 'none';
+}
+
+// Add search highlight styles
+const searchHighlightStyles = `
+    .marker.search-highlight {
+        animation: searchPulse 2s ease-in-out infinite;
+        border: 2px solid #667eea;
+    }
+    
+    @keyframes searchPulse {
+        0%, 100% { 
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        50% { 
+            box-shadow: 0 4px 25px rgba(102, 126, 234, 0.6);
+        }
+    }
+`;
+
+// Add styles to document
+const styleSheet = document.createElement('style');
+styleSheet.textContent = searchHighlightStyles;
+document.head.appendChild(styleSheet);// ===== PWA FUNCTIONALITY =====
+
+let deferredPrompt;
+let isInstalled = false;
+
+// Initialize PWA features
+function initializePWA() {
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('SafeCity PWA: Service Worker registered');
+                
+                // Listen for updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showUpdateAvailable();
+                        }
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('SafeCity PWA: Service Worker registration failed', error);
+            });
+    }
+
+    // Listen for install prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('SafeCity PWA: Install prompt available');
+        e.preventDefault();
+        deferredPrompt = e;
+        showInstallButton();
+    });
+
+    // Listen for app installed
+    window.addEventListener('appinstalled', () => {
+        console.log('SafeCity PWA: App installed successfully');
+        isInstalled = true;
+        hideInstallButton();
+        showInstallSuccess();
+    });
+
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
+        isInstalled = true;
+        console.log('SafeCity PWA: Running as installed app');
+    }
+
+    // Listen for service worker messages
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', event => {
+            if (event.data.type === 'SYNC_COMPLETE') {
+                showSyncComplete();
+            }
+        });
+    }
+
+    // Handle offline/online status
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Show initial connection status
+    updateConnectionStatus();
+}
+
+// Show install button
+function showInstallButton() {
+    // Create install button if it doesn't exist
+    let installBtn = document.getElementById('pwa-install-btn');
+    if (!installBtn) {
+        installBtn = document.createElement('button');
+        installBtn.id = 'pwa-install-btn';
+        installBtn.className = 'pwa-install-btn';
+        installBtn.innerHTML = '<i class="fas fa-download"></i> Install App';
+        installBtn.onclick = installPWA;
+        
+        // Add to header
+        const headerRight = document.querySelector('.header-right');
+        if (headerRight) {
+            headerRight.insertBefore(installBtn, headerRight.firstChild);
+        }
+    }
+    
+    installBtn.style.display = 'flex';
+}
+
+// Hide install button
+function hideInstallButton() {
+    const installBtn = document.getElementById('pwa-install-btn');
+    if (installBtn) {
+        installBtn.style.display = 'none';
+    }
+}
+
+// Install PWA
+async function installPWA() {
+    if (!deferredPrompt) {
+        console.log('SafeCity PWA: No install prompt available');
+        return;
+    }
+
+    try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+            console.log('SafeCity PWA: User accepted install');
+        } else {
+            console.log('SafeCity PWA: User dismissed install');
+        }
+        
+        deferredPrompt = null;
+        hideInstallButton();
+        
+    } catch (error) {
+        console.error('SafeCity PWA: Install failed', error);
+    }
+}
+
+// Show update available notification
+function showUpdateAvailable() {
+    const notification = document.createElement('div');
+    notification.className = 'pwa-notification update-available';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-sync-alt"></i>
+            <span>New version available!</span>
+            <button onclick="reloadApp()" class="btn-small">Update</button>
+            <button onclick="this.parentElement.parentElement.remove()" class="btn-small btn-secondary">Later</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+}
+
+// Show install success
+function showInstallSuccess() {
+    const notification = document.createElement('div');
+    notification.className = 'pwa-notification install-success';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-check-circle"></i>
+            <span>SafeCity installed successfully!</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="btn-small">Great!</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+// Show sync complete notification
+function showSyncComplete() {
+    const notification = document.createElement('div');
+    notification.className = 'pwa-notification sync-complete';
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Offline reports synced!</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Handle online status
+function handleOnline() {
+    console.log('SafeCity PWA: Back online');
+    updateConnectionStatus();
+    
+    // Trigger background sync if available
+    if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+        navigator.serviceWorker.ready.then(registration => {
+            return registration.sync.register('background-sync-reports');
+        });
+    }
+}
+
+// Handle offline status
+function handleOffline() {
+    console.log('SafeCity PWA: Gone offline');
+    updateConnectionStatus();
+}
+
+// Update connection status indicator
+function updateConnectionStatus() {
+    let statusIndicator = document.getElementById('connection-status');
+    
+    if (!statusIndicator) {
+        statusIndicator = document.createElement('div');
+        statusIndicator.id = 'connection-status';
+        statusIndicator.className = 'connection-status';
+        document.body.appendChild(statusIndicator);
+    }
+    
+    if (navigator.onLine) {
+        statusIndicator.className = 'connection-status online';
+        statusIndicator.innerHTML = '<i class="fas fa-wifi"></i> Online';
+    } else {
+        statusIndicator.className = 'connection-status offline';
+        statusIndicator.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline';
+    }
+    
+    // Auto-hide online status after 3 seconds
+    if (navigator.onLine) {
+        setTimeout(() => {
+            statusIndicator.style.opacity = '0';
+        }, 3000);
+    } else {
+        statusIndicator.style.opacity = '1';
+    }
+}
+
+// Reload app for updates
+function reloadApp() {
+    window.location.reload();
+}
+
+// Save report offline
+function saveReportOffline(report) {
+    try {
+        const offlineReports = JSON.parse(localStorage.getItem('safecity-offline-reports') || '[]');
+        offlineReports.push({
+            ...report,
+            offline: true,
+            timestamp: Date.now()
+        });
+        localStorage.setItem('safecity-offline-reports', JSON.stringify(offlineReports));
+        console.log('SafeCity PWA: Report saved offline');
+        return true;
+    } catch (error) {
+        console.error('SafeCity PWA: Failed to save report offline', error);
+        return false;
+    }
+}
+
+// Get offline reports count
+function getOfflineReportsCount() {
+    try {
+        const offlineReports = JSON.parse(localStorage.getItem('safecity-offline-reports') || '[]');
+        return offlineReports.length;
+    } catch (error) {
+        return 0;
+    }
+}
+
+// Initialize PWA when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        initializePWA();
+    }, 1000);
+});
